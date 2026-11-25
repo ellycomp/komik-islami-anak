@@ -268,7 +268,7 @@ async function loadDetail(){
     document.getElementById("detail-message").textContent=data.moral||"Selamat membaca dan mengambil hikmah.";
     setCover(data);
     document.getElementById("start-reading").addEventListener("click",()=>{
-      location.href="/komik-islami-anak/pembaca_komik/index.html?id="+encodeURIComponent(comicId);
+      location.href=new URL("../pembaca_komik/index.html?id="+encodeURIComponent(comicId),location.href).href;
     });
   }catch(e){ title.textContent=e.message; }
 }
