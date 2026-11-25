@@ -364,11 +364,9 @@ async function loadReader(){
       await renderPage();
     }catch(pdfError){
       console.error("PDF.js gagal memuat PDF:",pdfError);
-      const note=document.createElement("p");
-      note.className="text-center text-sm p-4 rounded-xl bg-white";
-      note.textContent="PDF belum dapat dibuka di perangkat ini: " + (pdfError.message || "kesalahan pembacaan PDF") + ". Muat ulang halaman untuk mencoba lagi.";
-      area.replaceChildren(note);
-      counter.textContent="PDF gagal dimuat";
+      // Sembunyikan pesan kesalahan dari tampilan pembaca.
+      area.replaceChildren();
+      counter.textContent="";
       prev.disabled=true;
       next.disabled=true;
     }
