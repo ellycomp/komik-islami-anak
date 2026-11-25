@@ -1,4 +1,4 @@
-const C='komik-islami-v9';
+const C='komik-islami-v10';
 const A=['/','/index.html','/beranda/index.html','/perpustakaan/index.html','/detail_komik/index.html','/pembaca_komik/index.html','/favorit_riwayat/index.html','/login_administrator/index.html','/dashboard_administrator/index.html','/manifest.webmanifest','/app.js','/icons/icon-192.svg','/icons/icon-512.svg'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(C).then(cache=>cache.addAll(A)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==C).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
