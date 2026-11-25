@@ -355,4 +355,21 @@ if (typeof module !== 'undefined') module.exports = globalThis.tailwind.config;
   </div>
 
 
+<script type="module">
+import { auth, db } from "../firebase-config.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+onAuthStateChanged(auth,async(user)=>{
+ if(!user){location.replace("../login_administrator/index.html");return;}
+ try{
+  const snap=await getDoc(doc(db,"admins",user.uid));
+  if(!snap.exists()||snap.data().role!=="admin"){
+   await signOut(auth);
+   location.replace("../login_administrator/index.html");
+  }
+ }catch(e){
+  document.body.innerHTML='<main style="padding:24px;font-family:sans-serif">Tidak dapat memverifikasi akses administrator. Periksa koneksi dan aturan Firestore, lalu muat ulang halaman.</main>';
+ }
+});
+</script>
 <script src="/app.js"></script></body></html>
