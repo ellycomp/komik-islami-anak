@@ -433,15 +433,15 @@ const categoryStatus = document.getElementById("category-status");
 const defaultCategories = ["Akhlak Mulia", "Doa Harian", "Ibadah", "Kisah Teladan", "Kisah Alam"];
 
 function categoryId(name) {
-  return name.toLowerCase().normalize("NFD").replace(/[\\u0300-\\u036f]/g, "")
+  return name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
 function renderCategories(items) {
-  categoryList.innerHTML = "";
-  categorySelect.innerHTML = "";
-  items.sort((a,b) => a.name.localeCompare(b.name, "id"));
-  items.forEach(item => {
+  categoryList.replaceChildren();
+  categorySelect.replaceChildren();
+  items.sort((a, b) => a.name.localeCompare(b.name, "id"));
+  for (const item of items) {
     const option = document.createElement("option");
     option.value = item.name;
     option.textContent = item.name;
@@ -453,59 +453,81 @@ function renderCategories(items) {
     label.textContent = item.name;
     const remove = document.createElement("button");
     remove.type = "button";
-    remove.className = "w-7 h-7 rounded-full flex items-center justify-center hover:bg-white";
+    remove.className = "w-7 h-7 rounded-full flex items-center justify-center";
     remove.setAttribute("aria-label", "Hapus " + item.name);
     remove.textContent = "×";
     remove.addEventListener("click", () => removeCategory(item.id, item.name));
     chip.append(label, remove);
     categoryList.appendChild(chip);
-  });
-  if (!items.length) categoryList.textContent = "Belum ada kategori.";
+  }
+  if (items.length === 0) categoryList.textContent = "Belum ada kategori.";
 }
 
 async function loadCategories() {
+  categoryList.textContent = "Memuat kategori...";
   try {
     const ref = collection(db, "categories");
-    let snap = await getDocs(ref);
-    if (snap.empty) {
+    let snapshot = await getDocs(ref);
+    if (snapshot.empty) {
       for (const name of defaultCategories) {
         await setDoc(doc(db, "categories", categoryId(name)), {
-          name, createdAt: new Date().toISOString()
+          name: name,
+          createdAt: new Date().toISOString()
         });
       }
-      snap = await getDocs(ref);
+      snapshot = await getDocs(ref);
     }
-    renderCategories(snap.docs.map(d => ({id:d.id, ...d.data()})));
-    onSnapshot(ref, snapshot => {
-      renderCategories(snapshot.docs.map(d => ({id:d.id, ...d.data()})));
-    }, error => {
-      categoryStatus.textContent = "Gagal memantau kategori: " + error.message;
-    });
+    renderCategories(snapshot.docs.map(item => ({
+      id: item.id,
+      name: item.data().name
+    })).filter(item => item.name));
+    categoryStatus.textContent = "Kategori berhasil dimuat.";
   } catch (error) {
-    categoryStatus.textContent = "Kategori belum dapat dimuat. Aturan Firestore perlu mengizinkan administrator mengelola koleksi categories. " + error.message;
-    categoryList.textContent = "Kategori belum tersedia.";
+    categoryList.textContent = "Daftar kategori belum dapat dimuat.";
+    categoryStatus.textContent = "Gagal memuat kategori: " + error.message;
   }
 }
 
 async function addCategory() {
   const input = document.getElementById("new-category-name");
   const name = input.value.trim();
-  if (!name) { categoryStatus.textContent = "Masukkan nama kategori."; return; }
+  if (!name) {
+    categoryStatus.textContent = "Masukkan nama kategori terlebih dahulu.";
+    input.focus();
+    return;
+  }
   const id = categoryId(name);
-  if (!id) { categoryStatus.textContent = "Nama kategori tidak valid."; return; }
+  if (!id) {
+    categoryStatus.textContent = "Nama kategori tidak valid.";
+    return;
+  }
+  const button = document.getElementById("add-category");
+  button.disabled = true;
+  categoryStatus.textContent = "Menyimpan kategori...";
   try {
-    await setDoc(doc(db, "categories", id), {name, createdAt:new Date().toISOString()});
+    const ref = doc(db, "categories", id);
+    const existing = await getDoc(ref);
+    if (existing.exists()) {
+      categoryStatus.textContent = "Kategori tersebut sudah ada.";
+      return;
+    }
+    await setDoc(ref, { name: name, createdAt: new Date().toISOString() });
     input.value = "";
-    categoryStatus.textContent = "Kategori berhasil ditambahkan.";
+    await loadCategories();
+    categoryStatus.textContent = "Kategori berhasil ditambahkan dan ditampilkan.";
   } catch (error) {
-    categoryStatus.textContent = "Gagal menambah kategori: " + error.message;
+    categoryStatus.textContent = "Gagal menambahkan kategori: " + error.message;
+  } finally {
+    button.disabled = false;
   }
 }
 
 async function removeCategory(id, name) {
   if (!confirm('Hapus kategori "' + name + '"?')) return;
+  categoryStatus.textContent = "Menghapus kategori...";
   try {
     await deleteDoc(doc(db, "categories", id));
+    await loadCategories();
     categoryStatus.textContent = "Kategori berhasil dihapus.";
   } catch (error) {
     categoryStatus.textContent = "Gagal menghapus kategori: " + error.message;
