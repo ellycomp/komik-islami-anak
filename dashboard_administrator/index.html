@@ -369,7 +369,19 @@ filePicker.addEventListener("change", async () => {
   }
   message.textContent = "Sedang membuat pratinjau halaman pertama...";
   try {
-    const pdfjs = await import("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/" + PDFJS_VERSION + "/pdf.min.js");
+    if (!window.pdfjsLib) {
+      await new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/" + PDFJS_VERSION + "/pdf.min.js";
+        script.onload = resolve;
+        script.onerror = () => reject(new Error("Library PDF.js gagal dimuat."));
+        document.head.appendChild(script);
+      });
+    }
+    const pdfjs = window.pdfjsLib;
+    if (!pdfjs || !pdfjs.GlobalWorkerOptions) {
+      throw new Error("PDF.js tidak berhasil diinisialisasi.");
+    }
     pdfjs.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/" + PDFJS_VERSION + "/pdf.worker.min.js";
     const bytes = await file.arrayBuffer();
     const pdf = await pdfjs.getDocument({data: bytes}).promise;
