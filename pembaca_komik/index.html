@@ -364,9 +364,18 @@ async function loadReader(){
       await renderPage();
     }catch(pdfError){
       console.error("PDF.js gagal memuat PDF:",pdfError);
-      // Sembunyikan pesan kesalahan dari tampilan pembaca.
-      area.replaceChildren();
-      counter.textContent="";
+      // Jika pemuatan PDF melalui layanan gagal, tampilkan pratinjau Google Drive.
+      const preview=document.createElement("iframe");
+      preview.src="https://drive.google.com/file/d/"+encodeURIComponent(d.fileId)+"/preview";
+      preview.title=d.title||"Pratinjau komik";
+      preview.style.width="100%";
+      preview.style.height="75vh";
+      preview.style.minHeight="520px";
+      preview.style.border="0";
+      preview.style.borderRadius="12px";
+      preview.allow="autoplay";
+      area.replaceChildren(preview);
+      counter.textContent="Pratinjau buku";
       prev.disabled=true;
       next.disabled=true;
     }
