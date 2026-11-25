@@ -188,19 +188,12 @@ if (typeof module !== 'undefined') module.exports = globalThis.tailwind.config;
       <section class="flex flex-col gap-gutter-sm">
         <div id="library-category-filters" class="flex items-center gap-gutter-sm overflow-x-auto pb-gutter-xs" role="group" aria-label="Filter Kategori">
           <button type="button" data-category="__all" aria-pressed="true" class="shrink-0 inline-flex items-center min-h-10 px-gutter-md py-gutter-xs rounded-full bg-light-primary text-light-on-primary font-body text-label-md">Semua</button>
-          <span class="text-sm text-light-on-surface-variant">Memuat kategori...</span>
         </div>
-        <div class="flex items-center gap-gutter-sm overflow-x-auto pb-gutter-xs" role="group" aria-label="Filter Usia">
-          <button data-component-id="chip-with-icon" data-component-type="chip" data-component-variant="with-icon" type="button" class="shrink-0 inline-flex items-center gap-gutter-xs min-h-10 px-gutter-md py-gutter-xs rounded-full bg-light-secondary-container text-light-on-secondary-container font-body text-label-md">
-            <span class="material-symbols-outlined text-[16px]" aria-hidden="true">child_care</span>
-            <span data-design-text-token="label-md">5–7 Tahun</span>
-          </button>
-          <button data-component-id="chip-action" data-component-type="chip" data-component-variant="action" type="button" class="shrink-0 inline-flex items-center min-h-10 px-gutter-md py-gutter-xs rounded-full bg-light-surface-container-lowest text-light-on-surface border border-light-outline-variant font-body text-label-md">
-            <span data-design-text-token="label-md">8–10 Tahun</span>
-          </button>
-          <button data-component-id="chip-action" data-component-type="chip" data-component-variant="action" type="button" class="shrink-0 inline-flex items-center min-h-10 px-gutter-md py-gutter-xs rounded-full bg-light-surface-container-lowest text-light-on-surface border border-light-outline-variant font-body text-label-md">
-            <span data-design-text-token="label-md">11–12 Tahun</span>
-          </button>
+        <div id="library-age-filters" class="flex items-center gap-gutter-sm overflow-x-auto pb-gutter-xs" role="group" aria-label="Filter Usia">
+          <button type="button" data-age="__all" aria-pressed="true" class="shrink-0 inline-flex items-center min-h-10 px-gutter-md py-gutter-xs rounded-full bg-light-secondary-container text-light-on-secondary-container font-body text-label-md">Semua Usia</button>
+          <button type="button" data-age="5-7" aria-pressed="false" class="shrink-0 inline-flex items-center min-h-10 px-gutter-md py-gutter-xs rounded-full bg-light-surface-container-lowest text-light-on-surface border border-light-outline-variant font-body text-label-md">5–7 Tahun</button>
+          <button type="button" data-age="8-10" aria-pressed="false" class="shrink-0 inline-flex items-center min-h-10 px-gutter-md py-gutter-xs rounded-full bg-light-surface-container-lowest text-light-on-surface border border-light-outline-variant font-body text-label-md">8–10 Tahun</button>
+          <button type="button" data-age="11-12" aria-pressed="false" class="shrink-0 inline-flex items-center min-h-10 px-gutter-md py-gutter-xs rounded-full bg-light-surface-container-lowest text-light-on-surface border border-light-outline-variant font-body text-label-md">11–12 Tahun</button>
         </div>
       </section>
 
@@ -286,74 +279,52 @@ if (typeof module !== 'undefined') module.exports = globalThis.tailwind.config;
 import { db } from "/komik-islami-anak/firebase-config.js";
 import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
-const filterBox = document.getElementById("library-category-filters");
-const grid = document.getElementById("library-comic-grid");
-const empty = document.getElementById("library-empty-state");
-const cards = Array.from(grid.querySelectorAll(":scope > a"));
-const aliases = {"Akhlak Mulia":"Akhlak"};
-let activeCategory = "__all";
+const categoryBox=document.getElementById("library-category-filters");
+const ageBox=document.getElementById("library-age-filters");
+const grid=document.getElementById("library-comic-grid");
+const empty=document.getElementById("library-empty-state");
+const cards=Array.from(grid.querySelectorAll(":scope > a"));
+let selectedCategory="__all", selectedAge="__all";
+const aliases={"Akhlak Mulia":"Akhlak"};
 
-function cardCategory(card) {
-  return card.querySelector("span.inline-block")?.textContent.trim() || "";
+function matches(card){
+ const badge=card.querySelector("span.inline-block")?.textContent.trim()||"";
+ const wanted=aliases[selectedCategory]||selectedCategory;
+ const categoryOK=selectedCategory==="__all"||badge.toLocaleLowerCase("id")===wanted.toLocaleLowerCase("id");
+ const age=card.dataset.age||"__all";
+ const ageOK=selectedAge==="__all"||age==="__all"||age.split(",").includes(selectedAge);
+ return categoryOK&&ageOK;
 }
-function applyFilter(category) {
-  activeCategory = category;
-  let shown = 0;
-  for (const card of cards) {
-    const badge = cardCategory(card);
-    const wanted = aliases[category] || category;
-    const visible = category === "__all" || badge.toLocaleLowerCase("id") === wanted.toLocaleLowerCase("id");
-    card.hidden = !visible;
-    if (visible) shown++;
-  }
-  empty.classList.toggle("hidden", shown > 0);
-  filterBox.querySelectorAll("button[data-category]").forEach(button => {
-    const selected = button.dataset.category === category;
-    button.setAttribute("aria-pressed", String(selected));
-    button.className = selected
-      ? "shrink-0 inline-flex items-center min-h-10 px-gutter-md py-gutter-xs rounded-full bg-light-primary text-light-on-primary font-body text-label-md"
-      : "shrink-0 inline-flex items-center min-h-10 px-gutter-md py-gutter-xs rounded-full bg-light-surface-container-lowest text-light-on-surface border border-light-outline-variant font-body text-label-md";
-  });
+function apply(){
+ let count=0;
+ cards.forEach(card=>{const show=matches(card);card.hidden=!show;if(show)count++;});
+ empty.classList.toggle("hidden",count>0);
+ categoryBox.querySelectorAll("button[data-category]").forEach(b=>{
+  const on=b.dataset.category===selectedCategory;b.setAttribute("aria-pressed",String(on));
+  b.className=on?"shrink-0 inline-flex items-center min-h-10 px-gutter-md py-gutter-xs rounded-full bg-light-primary text-light-on-primary font-body text-label-md":"shrink-0 inline-flex items-center min-h-10 px-gutter-md py-gutter-xs rounded-full bg-light-surface-container-lowest text-light-on-surface border border-light-outline-variant font-body text-label-md";
+ });
+ ageBox.querySelectorAll("button[data-age]").forEach(b=>{
+  const on=b.dataset.age===selectedAge;b.setAttribute("aria-pressed",String(on));
+  b.className=on?"shrink-0 inline-flex items-center min-h-10 px-gutter-md py-gutter-xs rounded-full bg-light-secondary-container text-light-on-secondary-container font-body text-label-md":"shrink-0 inline-flex items-center min-h-10 px-gutter-md py-gutter-xs rounded-full bg-light-surface-container-lowest text-light-on-surface border border-light-outline-variant font-body text-label-md";
+ });
 }
-function renderFilters(names) {
-  filterBox.replaceChildren();
-  const all = document.createElement("button");
-  all.type = "button";
-  all.dataset.category = "__all";
-  all.textContent = "Semua (" + cards.length + ")";
-  all.addEventListener("click", () => applyFilter("__all"));
-  filterBox.appendChild(all);
-  for (const name of names) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.dataset.category = name;
-    button.textContent = name;
-    button.className = "shrink-0 inline-flex items-center min-h-10 px-gutter-md py-gutter-xs rounded-full bg-light-surface-container-lowest text-light-on-surface border border-light-outline-variant font-body text-label-md";
-    button.addEventListener("click", () => applyFilter(name));
-    filterBox.appendChild(button);
-  }
-  const requested = new URLSearchParams(location.search).get("kategori");
-  const target = names.find(name => name.toLocaleLowerCase("id") === (requested || "").toLocaleLowerCase("id"));
-  applyFilter(target || "__all");
+categoryBox.addEventListener("click",e=>{const b=e.target.closest("button[data-category]");if(!b)return;selectedCategory=b.dataset.category;apply();});
+ageBox.addEventListener("click",e=>{const b=e.target.closest("button[data-age]");if(!b)return;selectedAge=b.dataset.age;apply();});
+async function loadCategories(){
+ try{
+  const snap=await getDocs(collection(db,"categories"));
+  const names=snap.docs.map(d=>d.data().name).filter(n=>typeof n==="string"&&n.trim()).sort((a,b)=>a.localeCompare(b,"id"));
+  categoryBox.replaceChildren();
+  const all=document.createElement("button");all.type="button";all.dataset.category="__all";all.textContent="Semua";categoryBox.appendChild(all);
+  names.forEach(name=>{const b=document.createElement("button");b.type="button";b.dataset.category=name;b.textContent=name;b.className="shrink-0 inline-flex items-center min-h-10 px-gutter-md py-gutter-xs rounded-full bg-light-surface-container-lowest text-light-on-surface border border-light-outline-variant font-body text-label-md";categoryBox.appendChild(b);});
+  const requested=new URLSearchParams(location.search).get("kategori");
+  if(requested&&names.includes(requested))selectedCategory=requested;
+  apply();
+ }catch(error){console.error("Kategori:",error);apply();}
 }
-async function loadLibraryCategories() {
-  try {
-    const snapshot = await getDocs(collection(db, "categories"));
-    const names = snapshot.docs.map(doc => doc.data().name)
-      .filter(name => typeof name === "string" && name.trim())
-      .sort((a,b) => a.localeCompare(b,"id"));
-    localStorage.setItem("komik-islami-anak-categories", JSON.stringify(names));
-    renderFilters(names);
-  } catch (error) {
-    let cached = [];
-    try { cached = JSON.parse(localStorage.getItem("komik-islami-anak-categories") || "[]"); } catch (_) {}
-    if (cached.length) renderFilters(cached);
-    else {
-      filterBox.innerHTML = '<span class="text-sm text-light-on-surface-variant">Kategori belum dapat dimuat. Periksa koneksi.</span>';
-      console.error("Gagal memuat kategori perpustakaan:", error);
-    }
-  }
-}
-loadLibraryCategories();
+const requestedAge=new URLSearchParams(location.search).get("usia");
+if(["5-7","8-10","11-12"].includes(requestedAge))selectedAge=requestedAge;
+loadCategories();
+apply();
 </script>
 <script src="/komik-islami-anak/app.js"></script></body></html>
