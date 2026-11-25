@@ -153,7 +153,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.tailwind.config;
 
     <!-- Contextual Header -->
     <header class="sticky top-0 z-20 bg-light-surface border-b border-light-outline-variant px-page-margin py-gutter-sm flex items-center justify-between gap-gutter-sm">
-      <a href="/komik-islami-anak/beranda/index.html" aria-label="Kembali" data-component-id="button-icon" data-component-type="button" data-component-variant="icon" class="inline-flex items-center justify-center w-11 h-11 rounded-full bg-light-surface-container-lowest text-light-on-surface border border-light-outline-variant hover:bg-light-surface-container-low">
+      <a href="/komik-islami-anak/perpustakaan/index.html" aria-label="Kembali" data-component-id="button-icon" data-component-type="button" data-component-variant="icon" class="inline-flex items-center justify-center w-11 h-11 rounded-full bg-light-surface-container-lowest text-light-on-surface border border-light-outline-variant hover:bg-light-surface-container-low">
         <span class="material-symbols-outlined text-[22px]" aria-hidden="true">arrow_back</span>
       </a>
       <span class="font-headline text-headline-sm text-light-on-surface" data-design-text-token="headline-sm">Detail Komik</span>
@@ -168,18 +168,12 @@ if (typeof module !== 'undefined') module.exports = globalThis.tailwind.config;
       <!-- Cover & Judul -->
       <section class="flex flex-col items-center text-center gap-gutter-md">
         <div class="w-48 rounded-xl overflow-hidden shadow-md border-2 border-light-outline-variant bg-light-surface-container-lowest">
-          <img src="https://lh3.googleusercontent.com/aida/ALJJyrBX_yEDwUoBwUQzD6fXnzonR_uqfcN9hIsD4HEVYFrH8oPcYLdc1HHgEdN_V-NOhJ2p_ORzQOzxFkCS4dpHyUgjR_KaTcU3J0zj3mFwomB1XhCTPztnsmXgPfF6ZaBKIoAOjpJ_tWkNjp2SJyebrfksASg1nWzCR3F7ppZL-XJp1ldD9YEQVxO7gVjySHXK785R2_J5zgZP1tdtwSanYfRec9NGz5R_sdGP12NLuhn5RXGGAS4oYo6ZYl_UsJY" alt="Sampul Komik Kejujuran Ali" class="w-full h-64 object-cover">
+          <img id="detail-cover" src="" alt="Sampul komik" class="w-full h-64 object-cover">
         </div>
         <div class="flex flex-col items-center gap-gutter-xs">
-          <span class="px-gutter-md py-gutter-xs rounded-full bg-light-secondary-container text-light-on-secondary-container font-body text-label-md" data-design-text-token="label-md">
-            Akhlak Mulia
-          </span>
-          <h1 class="font-headline text-display-lg-mobile text-light-on-surface text-balance" data-design-text-token="display-lg-mobile">
-            Kisah Kejujuran Ali
-          </h1>
-          <p class="font-body text-body-md text-light-on-surface-variant" data-design-text-token="body-md">
-            Karya Kak Zaidan • Ilustrasi Tim Ceria
-          </p>
+          <span id="detail-category" class="px-gutter-md py-gutter-xs rounded-full bg-light-secondary-container text-light-on-secondary-container font-body text-label-md">Memuat kategori...</span>
+          <h1 id="detail-title" class="font-headline text-display-lg-mobile text-light-on-surface text-balance">Memuat komik...</h1>
+          <p id="detail-author" class="font-body text-body-md text-light-on-surface-variant"></p>
         </div>
       </section>
 
@@ -187,11 +181,11 @@ if (typeof module !== 'undefined') module.exports = globalThis.tailwind.config;
       <section class="grid grid-cols-3 gap-gutter-sm">
         <div class="rounded-lg bg-light-surface-container-lowest border border-light-outline-variant p-gutter-sm flex flex-col items-center text-center gap-gutter-xs">
           <span class="material-symbols-outlined text-[20px] text-light-primary" aria-hidden="true">child_care</span>
-          <span class="font-body text-label-md text-light-on-surface" data-design-text-token="label-md">7–10 Thn</span>
+          <span id="detail-age" class="font-body text-label-md text-light-on-surface">-</span>
         </div>
         <div class="rounded-lg bg-light-surface-container-lowest border border-light-outline-variant p-gutter-sm flex flex-col items-center text-center gap-gutter-xs">
           <span class="material-symbols-outlined text-[20px] text-light-primary" aria-hidden="true">auto_stories</span>
-          <span class="font-body text-label-md text-light-on-surface tabular-nums" data-design-text-token="label-md">12 Hal</span>
+          <span id="detail-pages" class="font-body text-label-md text-light-on-surface tabular-nums">-</span>
         </div>
         <div class="rounded-lg bg-light-surface-container-lowest border border-light-outline-variant p-gutter-sm flex flex-col items-center text-center gap-gutter-xs">
           <span class="material-symbols-outlined text-[20px] text-light-secondary" style="font-variation-settings: &#39;FILL&#39; 1;" aria-hidden="true">star</span>
@@ -202,20 +196,16 @@ if (typeof module !== 'undefined') module.exports = globalThis.tailwind.config;
       <!-- Sinopsis & Hikmah -->
       <section class="rounded-lg bg-light-surface-container-lowest border border-light-outline-variant p-gutter-md flex flex-col gap-gutter-sm">
         <h2 class="font-headline text-headline-sm text-light-on-surface" data-design-text-token="headline-sm">Tentang Cerita Ini</h2>
-        <p class="font-body text-body-md text-light-on-surface-variant text-pretty" data-design-text-token="body-md">
-          Pagi itu Ali pergi ke pasar bersama ibunya. Di tengah jalan, ia menemukan sebuah kantong uang kecil yang terjatuh. Meski sempat tergoda membeli mainan, Ali teringat pesan gurunya tentang sifat jujur yang dicintai Allah.
-        </p>
+        <p id="detail-description" class="font-body text-body-md text-light-on-surface-variant text-pretty">Informasi cerita akan ditampilkan di sini.</p>
         <div class="rounded-md bg-light-surface-container-low p-gutter-sm flex items-start gap-gutter-sm">
           <span class="material-symbols-outlined text-[20px] text-light-primary shrink-0 mt-0.5" aria-hidden="true">lightbulb</span>
-          <p class="font-body text-label-md text-light-on-surface" data-design-text-token="label-md">
-            Pesan Hikmah: Jujur membawa ketenangan hati dan kepercayaan dari semua orang.
-          </p>
+          <p id="detail-message" class="font-body text-label-md text-light-on-surface">Selamat membaca!</p>
         </div>
       </section>
 
       <!-- Aksi Utama -->
       <section class="flex flex-col gap-gutter-sm">
-        <button type="button" onclick="location.href=&#39;/pembaca_komik/index.html&#39;" data-component-id="button-with-icon" data-component-type="button" data-component-variant="with-icon" class="w-full flex items-center justify-center gap-gutter-sm min-h-12 px-gutter-lg py-gutter-sm rounded-full bg-light-primary text-light-on-primary font-body text-label-lg shadow-sm hover:bg-light-primary-container">
+        <button type="button" id="start-reading" data-component-id="button-with-icon" data-component-type="button" data-component-variant="with-icon" class="w-full flex items-center justify-center gap-gutter-sm min-h-12 px-gutter-lg py-gutter-sm rounded-full bg-light-primary text-light-on-primary font-body text-label-lg shadow-sm hover:bg-light-primary-container">
           <span class="material-symbols-outlined text-[22px]" aria-hidden="true">menu_book</span>
           <span data-design-text-token="label-lg">Mulai Membaca</span>
         </button>
@@ -245,4 +235,43 @@ if (typeof module !== 'undefined') module.exports = globalThis.tailwind.config;
   </div>
 
 
+<script type="module">
+import { db } from "/komik-islami-anak/firebase-config.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+const params = new URLSearchParams(location.search);
+const comicId = params.get("id");
+const cover = document.getElementById("detail-cover");
+const title = document.getElementById("detail-title");
+function setCover(data) {
+  const id = data.coverFileId || "";
+  const urls = id ? [
+    "https://drive.google.com/thumbnail?id="+encodeURIComponent(id)+"&sz=w1000",
+    "https://drive.google.com/uc?export=view&id="+encodeURIComponent(id),
+    data.coverUrl || ""
+  ] : [data.coverUrl || ""];
+  let i=0;
+  const next=()=>{ if(i<urls.length && urls[i]) cover.src=urls[i++]; else cover.alt="Sampul belum tersedia"; };
+  cover.onerror=next; next();
+}
+async function loadDetail(){
+  if(!comicId){ title.textContent="Komik tidak ditemukan"; return; }
+  try{
+    const snap=await getDoc(doc(db,"comics",comicId));
+    if(!snap.exists()) throw new Error("Data komik tidak ditemukan.");
+    const data=snap.data();
+    title.textContent=data.title||"Tanpa judul";
+    document.getElementById("detail-category").textContent=data.category||"Komik";
+    document.getElementById("detail-age").textContent=(data.age||"-").replace("-", "–")+" Tahun";
+    document.getElementById("detail-pages").textContent=data.pageCount ? data.pageCount+" Hal" : (data.mimeType==="application/pdf"?"PDF":"Gambar");
+    document.getElementById("detail-author").textContent=data.author||"Komik Islami Anak";
+    document.getElementById("detail-description").textContent=data.description||"Baca cerita ini dan temukan pesan kebaikan di dalamnya.";
+    document.getElementById("detail-message").textContent=data.moral||"Selamat membaca dan mengambil hikmah.";
+    setCover(data);
+    document.getElementById("start-reading").addEventListener("click",()=>{
+      location.href="/komik-islami-anak/pembaca_komik/index.html?id="+encodeURIComponent(comicId);
+    });
+  }catch(e){ title.textContent=e.message; }
+}
+loadDetail();
+</script>
 <script src="/komik-islami-anak/app.js"></script></body></html>
