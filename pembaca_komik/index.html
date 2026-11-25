@@ -254,7 +254,7 @@ async function renderPage(){
  canvas.width=Math.floor(viewport.width);
  canvas.height=Math.floor(viewport.height);
  canvas.className="w-full h-auto rounded-xl bg-white shadow-sm";
- canvas.style.touchAction="none";
+ canvas.style.touchAction="pan-y";
  canvas.style.userSelect="none";
  canvas.style.webkitUserSelect="none";
  area.replaceChildren(canvas);
@@ -268,45 +268,43 @@ async function goTo(n){
 }
 prev.addEventListener("click",()=>goTo(page-1));
 next.addEventListener("click",()=>goTo(page+1));
-// Navigasi geser: sentuhan khusus HP, pointer untuk mouse
-area.style.touchAction = "pan-y";
-let gestureStart = null;
+// Navigasi swipe HP: tangkap sentuhan di dokumen agar tidak hilang saat canvas dirender ulang
 let navigationBusy = false;
-function navigateBySwipe(deltaX, deltaY) {
-  if (navigationBusy) return;
-  if (Math.abs(deltaX) < 35 || Math.abs(deltaX) < Math.abs(deltaY) * 1.1) return;
-  const target = page + (deltaX < 0 ? 1 : -1);
-  if (target < 1 || target > total) return;
+let touchStart = null;
+function navigateBySwipe(dx, dy) {
+  if (navigationBusy || Math.abs(dx) < 30 || Math.abs(dx) < Math.abs(dy) * 1.05) return;
+  const target = page + (dx < 0 ? 1 : -1);
+  if (!pdf || target < 1 || target > total) return;
   navigationBusy = true;
   goTo(target)
-    .catch(err => console.error("Gagal berpindah halaman:", err))
-    .finally(() => setTimeout(() => { navigationBusy = false; }, 250));
+    .catch(err => { console.error("Swipe gagal:", err); })
+    .finally(() => { navigationBusy = false; });
 }
-// Layar sentuh HP
-let touchStart = null;
-area.addEventListener("touchstart", e => {
-  if (e.touches.length !== 1) return;
+document.addEventListener("touchstart", e => {
+  if (!area.contains(e.target) || e.touches.length !== 1) return;
   touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-}, { passive: true });
-area.addEventListener("touchend", e => {
-  if (!touchStart || !e.changedTouches.length) return;
-  const dx = e.changedTouches[0].clientX - touchStart.x;
-  const dy = e.changedTouches[0].clientY - touchStart.y;
+}, { capture: true, passive: true });
+document.addEventListener("touchmove", e => {
+  if (!touchStart || !area.contains(e.target) || e.touches.length !== 1) return;
+  const dx = e.touches[0].clientX - touchStart.x;
+  const dy = e.touches[0].clientY - touchStart.y;
+  if (Math.abs(dx) > Math.abs(dy) * 1.05) e.preventDefault();
+}, { capture: true, passive: false });
+document.addEventListener("touchend", e => {
+  if (!touchStart) return;
+  const t = e.changedTouches[0];
+  if (t) navigateBySwipe(t.clientX - touchStart.x, t.clientY - touchStart.y);
   touchStart = null;
-  navigateBySwipe(dx, dy);
-}, { passive: true });
-area.addEventListener("touchcancel", () => { touchStart = null; }, { passive: true });
-// Mouse dan perangkat pointer
-area.addEventListener("pointerdown", e => {
-  if (e.pointerType !== "mouse" || e.button !== 0) return;
-  gestureStart = { id: e.pointerId, x: e.clientX, y: e.clientY };
+}, { capture: true, passive: true });
+document.addEventListener("touchcancel", () => { touchStart = null; }, true);
+// Mouse desktop
+let mouseStart = null;
+area.addEventListener("mousedown", e => { mouseStart = { x: e.clientX, y: e.clientY }; });
+document.addEventListener("mouseup", e => {
+  if (!mouseStart) return;
+  navigateBySwipe(e.clientX - mouseStart.x, e.clientY - mouseStart.y);
+  mouseStart = null;
 });
-area.addEventListener("pointerup", e => {
-  if (!gestureStart || gestureStart.id !== e.pointerId) return;
-  navigateBySwipe(e.clientX - gestureStart.x, e.clientY - gestureStart.y);
-  gestureStart = null;
-});
-area.addEventListener("pointercancel", () => { gestureStart = null; });
 document.addEventListener("keydown",e=>{
  if(e.key==="ArrowRight")goTo(page+1);
  if(e.key==="ArrowLeft")goTo(page-1);
