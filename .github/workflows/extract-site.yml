@@ -1,0 +1,41 @@
+name: Extract website package
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Komik_Islami_Anak_PWA_Perbaikan.zip'
+      - '.github/workflows/extract-site.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Extract website files
+        run: |
+          set -e
+          test -f Komik_Islami_Anak_PWA_Perbaikan.zip
+          mkdir -p /tmp/komik-site
+          unzip -q Komik_Islami_Anak_PWA_Perbaikan.zip -d /tmp/komik-site
+          test -f /tmp/komik-site/index.html
+          cp -R /tmp/komik-site/. .
+          rm -f Komik_Islami_Anak_PWA_Perbaikan.zip
+
+      - name: Commit extracted website
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "Extract Komik Islami Anak website files"
+            git push
+          fi
