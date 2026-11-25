@@ -194,8 +194,53 @@ if (typeof module !== 'undefined') module.exports = globalThis.tailwind.config;
 <script type="module">
 import { db } from "/komik-islami-anak/firebase-config.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import * as pdfjsLib from "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs";
 const id=new URLSearchParams(location.search).get("id");
 const area=document.getElementById("reader-content");
+const prev=document.getElementById("btn-prev");
+const next=document.getElementById("btn-next");
+const counter=document.getElementById("page-counter");
+const progress=document.getElementById("read-progress");
+let pdf=null, page=1, total=1, touchX=0;
+pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs";
+function updateControls(){
+ counter.textContent="Halaman "+page+" / "+total;
+ progress.style.width=(page/total*100)+"%";
+ prev.disabled=page<=1;
+ next.disabled=page>=total;
+ prev.style.opacity=prev.disabled?".45":"1";
+ next.style.opacity=next.disabled?".45":"1";
+}
+async function renderPage(){
+ const p=await pdf.getPage(page);
+ const base=p.getViewport({scale:1});
+ const scale=Math.min((area.clientWidth||window.innerWidth-32)/base.width,1.8);
+ const viewport=p.getViewport({scale});
+ const canvas=document.createElement("canvas");
+ const context=canvas.getContext("2d");
+ canvas.width=Math.floor(viewport.width);
+ canvas.height=Math.floor(viewport.height);
+ canvas.className="w-full h-auto rounded-xl bg-white shadow-sm";
+ area.replaceChildren(canvas);
+ await p.render({canvasContext:context,viewport}).promise;
+ updateControls();
+}
+async function goTo(n){
+ if(!pdf)return;
+ page=Math.max(1,Math.min(total,n));
+ await renderPage();
+}
+prev.addEventListener("click",()=>goTo(page-1));
+next.addEventListener("click",()=>goTo(page+1));
+area.addEventListener("touchstart",e=>{touchX=e.changedTouches[0].screenX;},{passive:true});
+area.addEventListener("touchend",e=>{
+ const delta=e.changedTouches[0].screenX-touchX;
+ if(Math.abs(delta)>45) goTo(page+(delta<0?1:-1));
+},{passive:true});
+document.addEventListener("keydown",e=>{
+ if(e.key==="ArrowRight")goTo(page+1);
+ if(e.key==="ArrowLeft")goTo(page-1);
+});
 async function loadReader(){
  try{
   if(!id) throw new Error("ID komik tidak ditemukan. Kembali ke perpustakaan dan pilih komik.");
@@ -204,30 +249,40 @@ async function loadReader(){
   const d=snap.data();
   document.title=(d.title||"Pembaca Komik")+" — Komik Islami Anak";
   document.querySelector("header .font-headline").textContent=d.title||"Pembaca Komik";
-  const counter=document.getElementById("page-counter");
-  counter.textContent=d.mimeType==="application/pdf"?"Dokumen PDF":"Komik";
-  const progress=document.getElementById("read-progress");
-  progress.style.width="100%";
   area.replaceChildren();
   if(d.mimeType==="application/pdf" && d.fileId){
-    const frame=document.createElement("iframe");
-    frame.src="https://drive.google.com/file/d/"+encodeURIComponent(d.fileId)+"/preview";
-    frame.title=d.title||"Komik PDF";
-    frame.className="w-full rounded-xl border border-light-outline-variant bg-white";
-    frame.style.height="75vh";
-    area.appendChild(frame);
+    counter.textContent="Membuka buku...";
+    try{
+      pdf=await pdfjsLib.getDocument({url:"https://drive.google.com/uc?export=download&id="+encodeURIComponent(d.fileId)}).promise;
+      total=pdf.numPages;
+      page=1;
+      await renderPage();
+    }catch(pdfError){
+      console.error("PDF.js gagal memuat PDF:",pdfError);
+      const note=document.createElement("p");
+      note.className="text-center text-sm p-3";
+      note.textContent="PDF tidak dapat dimuat untuk mode geser. Silakan pastikan berkas Google Drive dapat diakses publik.";
+      const frame=document.createElement("iframe");
+      frame.src="https://drive.google.com/file/d/"+encodeURIComponent(d.fileId)+"/preview";
+      frame.title=d.title||"Komik PDF";
+      frame.className="w-full rounded-xl border border-light-outline-variant bg-white";
+      frame.style.height="75vh";
+      area.append(note,frame);
+      counter.textContent="Pratinjau PDF";
+      prev.disabled=true;next.disabled=true;
+    }
   } else if(d.fileUrl){
     const img=document.createElement("img");
     img.src=d.fileUrl;
     img.alt=d.title||"Halaman komik";
     img.className="w-full rounded-xl object-contain bg-white";
     area.appendChild(img);
+    counter.textContent="Gambar komik";
+    prev.disabled=true;next.disabled=true;
+    progress.style.width="100%";
   } else {
     throw new Error("Berkas komik belum memiliki tautan. Periksa data unggahan di Google Drive.");
   }
-  document.getElementById("btn-prev").disabled=true;
-  document.getElementById("btn-next").textContent="Selesai membaca";
-  document.getElementById("btn-next").addEventListener("click",()=>location.href="/komik-islami-anak/perpustakaan/index.html");
  }catch(e){area.textContent=e.message;}
 }
 loadReader();
