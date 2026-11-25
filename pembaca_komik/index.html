@@ -203,6 +203,38 @@ const counter=document.getElementById("page-counter");
 const progress=document.getElementById("read-progress");
 let pdf=null, page=1, total=1, touchX=0;
 pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvDWuXKGW-kvxsIfVmHA6b9vy2NIrNFj4sHbx94BphRF9OPcN1TcZz76fBJ1jo4Gky_g/exec";
+let jsonpCounter = 0;
+function loadPdfThroughAppsScript(fileId) {
+  return new Promise((resolve, reject) => {
+    const callbackName = "komikPdfCallback_" + Date.now() + "_" + (++jsonpCounter);
+    const script = document.createElement("script");
+    let timer;
+    const cleanup = () => {
+      clearTimeout(timer);
+      delete window[callbackName];
+      script.remove();
+    };
+    window[callbackName] = (result) => {
+      cleanup();
+      if (result && result.success && result.data) resolve(result.data);
+      else reject(new Error((result && result.message) || "PDF tidak berhasil diambil dari Google Drive."));
+    };
+    script.onerror = () => {
+      cleanup();
+      reject(new Error("Tidak dapat menghubungi layanan PDF. Periksa deployment Apps Script."));
+    };
+    timer = setTimeout(() => {
+      cleanup();
+      reject(new Error("Waktu pengambilan PDF habis. Ukuran PDF mungkin terlalu besar."));
+    }, 120000);
+    script.src = APPS_SCRIPT_URL
+      + "?action=getPdf&id=" + encodeURIComponent(fileId)
+      + "&callback=" + encodeURIComponent(callbackName);
+    document.head.appendChild(script);
+  });
+}
+
 function updateControls(){
  counter.textContent="Halaman "+page+" / "+total;
  progress.style.width=(page/total*100)+"%";
@@ -253,7 +285,11 @@ async function loadReader(){
   if(d.mimeType==="application/pdf" && d.fileId){
     counter.textContent="Membuka buku...";
     try{
-      pdf=await pdfjsLib.getDocument({url:"https://drive.google.com/uc?export=download&id="+encodeURIComponent(d.fileId)}).promise;
+      const pdfBase64 = await loadPdfThroughAppsScript(d.fileId);
+      const binary = atob(pdfBase64);
+      const pdfBytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) pdfBytes[i] = binary.charCodeAt(i);
+      pdf=await pdfjsLib.getDocument({data:pdfBytes}).promise;
       total=pdf.numPages;
       page=1;
       await renderPage();
@@ -261,7 +297,7 @@ async function loadReader(){
       console.error("PDF.js gagal memuat PDF:",pdfError);
       const note=document.createElement("p");
       note.className="text-center text-sm p-3";
-      note.textContent="PDF tidak dapat dimuat untuk mode geser. Silakan pastikan berkas Google Drive dapat diakses publik.";
+      note.textContent="Mode geser belum dapat memuat PDF: " + (pdfError.message || "terjadi kesalahan") + ". Pratinjau Google Drive ditampilkan sebagai alternatif.";
       const frame=document.createElement("iframe");
       frame.src="https://drive.google.com/file/d/"+encodeURIComponent(d.fileId)+"/preview";
       frame.title=d.title||"Komik PDF";
