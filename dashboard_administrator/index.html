@@ -232,13 +232,13 @@ if (typeof module !== 'undefined') module.exports = globalThis.tailwind.config;
 
           <label data-component-id="input-field-text" data-component-type="input-field" data-component-variant="text" class="flex flex-col gap-gutter-xs w-full">
             <span class="font-body text-label-md text-light-on-surface" data-design-text-token="label-md">Judul Cerita</span>
-            <input type="text" placeholder="Contoh: Sahabat Jujur di Sekolah" class="w-full min-h-11 px-gutter-md rounded-md bg-light-surface-container-lowest border border-light-outline-variant font-body text-body-md focus:border-light-primary focus:ring-2 focus:ring-light-primary/20">
+            <input id="comic-title" type="text" required placeholder="Contoh: Sahabat Jujur di Sekolah" class="w-full min-h-11 px-gutter-md rounded-md bg-light-surface-container-lowest border border-light-outline-variant font-body text-body-md focus:border-light-primary focus:ring-2 focus:ring-light-primary/20">
           </label>
 
           <div class="grid grid-cols-2 gap-gutter-sm">
             <label class="flex flex-col gap-gutter-xs">
               <span class="font-body text-label-md text-light-on-surface" data-design-text-token="label-md">Kategori</span>
-              <select class="w-full min-h-11 px-gutter-sm rounded-md bg-light-surface-container-lowest border border-light-outline-variant font-body text-body-md">
+              <select id="comic-category" class="w-full min-h-11 px-gutter-sm rounded-md bg-light-surface-container-lowest border border-light-outline-variant font-body text-body-md">
                 <option>Akhlak Mulia</option>
                 <option>Doa Harian</option>
                 <option>Ibadah</option>
@@ -247,7 +247,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.tailwind.config;
             </label>
             <label class="flex flex-col gap-gutter-xs">
               <span class="font-body text-label-md text-light-on-surface" data-design-text-token="label-md">Rentang Usia</span>
-              <select class="w-full min-h-11 px-gutter-sm rounded-md bg-light-surface-container-lowest border border-light-outline-variant font-body text-body-md">
+              <select id="comic-age" class="w-full min-h-11 px-gutter-sm rounded-md bg-light-surface-container-lowest border border-light-outline-variant font-body text-body-md">
                 <option>5–7 Tahun</option>
                 <option>8–10 Tahun</option>
                 <option>11–12 Tahun</option>
@@ -257,21 +257,15 @@ if (typeof module !== 'undefined') module.exports = globalThis.tailwind.config;
 
           <div class="rounded-lg border-2 border-dashed border-light-outline-variant bg-light-surface-container-low p-gutter-lg flex flex-col items-center text-center gap-gutter-xs">
             <span class="material-symbols-outlined text-[36px] text-light-primary" aria-hidden="true">upload_file</span>
-            <p class="font-body text-body-md text-light-on-surface" data-design-text-token="body-md">
-              Pilih berkas gambar (JPG/PNG) atau dokumen PDF
-            </p>
-            <span class="font-body text-label-md text-light-on-surface-variant" data-design-text-token="label-md">
-              Maksimal 25 MB per komik
-            </span>
+            <p class="font-body text-body-md text-light-on-surface">Pilih berkas gambar (JPG/PNG) atau dokumen PDF</p>
+            <input id="comic-file" type="file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" class="w-full text-sm">
+            <span class="font-body text-label-md text-light-on-surface-variant">Maksimal 25 MB per komik</span>
           </div>
+          <p id="upload-status" role="status" aria-live="polite" class="text-sm text-light-on-surface-variant"></p>
 
           <div class="flex items-center gap-gutter-sm">
-            <button type="button" data-component-id="button-secondary" data-component-type="button" data-component-variant="secondary" class="min-h-11 px-gutter-lg rounded-full bg-light-secondary-container text-light-on-secondary-container font-body text-label-lg">
-              <span data-design-text-token="label-lg">Simpan Draf</span>
-            </button>
-            <button type="button" data-component-id="button-primary" data-component-type="button" data-component-variant="primary" class="flex-1 min-h-11 px-gutter-lg rounded-full bg-light-primary text-light-on-primary font-body text-label-lg">
-              <span data-design-text-token="label-lg">Terbitkan</span>
-            </button>
+            <button id="save-draft" type="button" class="min-h-11 px-gutter-lg rounded-full bg-light-secondary-container text-light-on-secondary-container font-body text-label-lg"><span>Simpan Draf</span></button>
+            <button id="publish-comic" type="button" class="flex-1 min-h-11 px-gutter-lg rounded-full bg-light-primary text-light-on-primary font-body text-label-lg"><span>Terbitkan</span></button>
           </div>
         </article>
 
@@ -359,17 +353,93 @@ if (typeof module !== 'undefined') module.exports = globalThis.tailwind.config;
 import { auth, db } from "../firebase-config.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-onAuthStateChanged(auth,async(user)=>{
- if(!user){location.replace("../login_administrator/index.html");return;}
- try{
-  const snap=await getDoc(doc(db,"admins",user.uid));
-  if(!snap.exists()||snap.data().role!=="admin"){
-   await signOut(auth);
-   location.replace("../login_administrator/index.html");
+
+const UPLOAD_API = "https://script.google.com/macros/s/AKfycbwvDWuXKGW-kvxsIfVmHA6b9vy2NIrNFj4sHbx94BphRF9OPcN1TcZz76fBJ1jo4Gky_g/exec";
+let activeUser = null;
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    location.replace("../login_administrator/index.html");
+    return;
   }
- }catch(e){
-  document.body.innerHTML='<main style="padding:24px;font-family:sans-serif">Tidak dapat memverifikasi akses administrator. Periksa koneksi dan aturan Firestore, lalu muat ulang halaman.</main>';
- }
+  try {
+    const snap = await getDoc(doc(db, "admins", user.uid));
+    if (!snap.exists() || snap.data().role !== "admin") {
+      await signOut(auth);
+      location.replace("../login_administrator/index.html");
+      return;
+    }
+    activeUser = user;
+  } catch (e) {
+    document.body.innerHTML = '<main style="padding:24px;font-family:sans-serif">Tidak dapat memverifikasi akses administrator. Periksa koneksi dan aturan Firestore, lalu muat ulang halaman.</main>';
+  }
 });
+
+async function uploadComic(status) {
+  const statusBox = document.getElementById("upload-status");
+  const title = document.getElementById("comic-title").value.trim();
+  const category = document.getElementById("comic-category").value;
+  const age = document.getElementById("comic-age").value;
+  const file = document.getElementById("comic-file").files[0];
+
+  if (!activeUser) {
+    statusBox.textContent = "Sesi administrator belum siap. Muat ulang halaman.";
+    return;
+  }
+  if (!title || !file) {
+    statusBox.textContent = "Isi judul dan pilih berkas terlebih dahulu.";
+    return;
+  }
+  if (file.size > 25 * 1024 * 1024) {
+    statusBox.textContent = "Ukuran berkas maksimal 25 MB.";
+    return;
+  }
+  if (!["image/jpeg", "image/png", "application/pdf"].includes(file.type)) {
+    statusBox.textContent = "Format berkas harus JPG, PNG, atau PDF.";
+    return;
+  }
+
+  statusBox.textContent = "Sedang mengunggah berkas...";
+  document.getElementById("save-draft").disabled = true;
+  document.getElementById("publish-comic").disabled = true;
+
+  try {
+    const idToken = await activeUser.getIdToken(true);
+    const dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error("Berkas gagal dibaca."));
+      reader.readAsDataURL(file);
+    });
+    const fileData = dataUrl.split(",")[1];
+
+    const response = await fetch(UPLOAD_API, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({
+        idToken,
+        title,
+        category,
+        age,
+        fileName: file.name,
+        mimeType: file.type,
+        fileData,
+        status
+      })
+    });
+    const result = await response.json();
+    if (!result.success) throw new Error(result.message || "Unggahan gagal.");
+
+    statusBox.textContent = "Berhasil disimpan sebagai " + (status === "terbit" ? "Terbit" : "Draf") + ". Nama berkas: " + result.fileName;
+  } catch (error) {
+    statusBox.textContent = "Belum berhasil: " + error.message + ". Jika muncul masalah koneksi, kita periksa izin komunikasi Web App.";
+  } finally {
+    document.getElementById("save-draft").disabled = false;
+    document.getElementById("publish-comic").disabled = false;
+  }
+}
+
+document.getElementById("save-draft").addEventListener("click", () => uploadComic("draf"));
+document.getElementById("publish-comic").addEventListener("click", () => uploadComic("terbit"));
 </script>
 <script src="/app.js"></script></body></html>
