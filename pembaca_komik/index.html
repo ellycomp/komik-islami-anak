@@ -285,18 +285,17 @@ async function navigateByButton(direction) {
     updateControls();
   }
 }
-document.addEventListener("click", event => {
-  const button = event.target.closest("#btn-prev, #btn-next");
-  if (!button) return;
-  event.preventDefault();
-  event.stopPropagation();
-  navigateByButton(button.id === "btn-next" ? 1 : -1);
-}, true);
+// Handler langsung pada elemen tombol agar tap HP dan klik desktop memakai jalur yang sama
+window.komikHalamanBerikutnya = () => navigateByButton(1);
+window.komikHalamanSebelumnya = () => navigateByButton(-1);
+prev.onclick = window.komikHalamanSebelumnya;
+next.onclick = window.komikHalamanBerikutnya;
 [prev, next].forEach(button => {
-  button.disabled = false;
   button.style.position = "relative";
-  button.style.zIndex = "30";
+  button.style.zIndex = "50";
   button.style.pointerEvents = "auto";
+  button.style.touchAction = "manipulation";
+  button.style.cursor = "pointer";
 });
 // Navigasi swipe HP: tangkap sentuhan di dokumen agar tidak hilang saat canvas dirender ulang
 let navigationBusy = false;
