@@ -310,29 +310,9 @@ if (typeof module !== 'undefined') module.exports = globalThis.tailwind.config;
               <th class="py-gutter-sm text-right">Aksi</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-light-outline-variant font-body text-body-md">
-            <tr>
-              <td class="py-gutter-sm pr-gutter-md text-light-on-surface">Kisah Kejujuran Ali</td>
-              <td class="py-gutter-sm pr-gutter-md text-light-on-surface-variant">Akhlak Mulia</td>
-              <td class="py-gutter-sm pr-gutter-md font-body text-label-sm tabular-nums">12 Gambar</td>
-              <td class="py-gutter-sm pr-gutter-md"><span class="px-gutter-sm py-gutter-xs rounded-full bg-light-surface-variant text-light-primary font-body text-label-md">Terbit</span></td>
-              <td class="py-gutter-sm text-right"><button type="button" class="text-light-primary font-body text-label-md hover:underline">Ubah</button></td>
-            </tr>
-            <tr>
-              <td class="py-gutter-sm pr-gutter-md text-light-on-surface">Doa Sebelum Tidur</td>
-              <td class="py-gutter-sm pr-gutter-md text-light-on-surface-variant">Doa Harian</td>
-              <td class="py-gutter-sm pr-gutter-md font-body text-label-sm tabular-nums">PDF (8 Hal)</td>
-              <td class="py-gutter-sm pr-gutter-md"><span class="px-gutter-sm py-gutter-xs rounded-full bg-light-surface-variant text-light-primary font-body text-label-md">Terbit</span></td>
-              <td class="py-gutter-sm text-right"><button type="button" class="text-light-primary font-body text-label-md hover:underline">Ubah</button></td>
-            </tr>
-            <tr>
-              <td class="py-gutter-sm pr-gutter-md text-light-on-surface">Semut Pekerja Keras</td>
-              <td class="py-gutter-sm pr-gutter-md text-light-on-surface-variant">Kisah Alam</td>
-              <td class="py-gutter-sm pr-gutter-md font-body text-label-sm tabular-nums">14 Gambar</td>
-              <td class="py-gutter-sm pr-gutter-md"><span class="px-gutter-sm py-gutter-xs rounded-full bg-light-secondary-container text-light-on-secondary-container font-body text-label-md">Draf</span></td>
-              <td class="py-gutter-sm text-right"><button type="button" class="text-light-primary font-body text-label-md hover:underline">Terbitkan</button></td>
-            </tr>
-          </tbody>
+          <tbody id="admin-comic-list" class="divide-y divide-light-outline-variant font-body text-body-md">
+            <tr><td colspan="5" class="py-4 text-center text-light-on-surface-variant">Memuat daftar komik...</td></tr>
+          </tbody>  </tbody>
         </table>
       </section>
 
@@ -539,6 +519,75 @@ function renderCategories(items) {
   if (items.length === 0) categoryList.textContent = "Belum ada kategori.";
 }
 
+async function loadAdminComics() {
+  const tbody = document.getElementById("admin-comic-list");
+  tbody.innerHTML = '<tr><td colspan="5" class="py-4 text-center">Memuat daftar komik...</td></tr>';
+  try {
+    const snapshot = await getDocs(collection(db, "comics"));
+    tbody.replaceChildren();
+    if (snapshot.empty) {
+      tbody.innerHTML = '<tr><td colspan="5" class="py-4 text-center">Belum ada data komik.</td></tr>';
+      return;
+    }
+    snapshot.docs.forEach(item => {
+      const data = item.data();
+      const tr = document.createElement("tr");
+      const values = [
+        data.title || "Tanpa judul",
+        data.category || "-",
+        data.mimeType === "application/pdf" ? "PDF" : (data.mimeType || "-"),
+        data.status || "-"
+      ];
+      values.forEach((value, index) => {
+        const td = document.createElement("td");
+        td.className = "py-gutter-sm pr-gutter-md";
+        td.textContent = value;
+        tr.appendChild(td);
+      });
+      const action = document.createElement("td");
+      action.className = "py-gutter-sm text-right";
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = "Hapus";
+      button.className = "text-red-700 font-semibold text-sm underline";
+      button.addEventListener("click", () => deleteComicEverywhere(item.id, data.title || "Tanpa judul", button));
+      action.appendChild(button);
+      tr.appendChild(action);
+      tbody.appendChild(tr);
+    });
+  } catch (error) {
+    console.error("Daftar komik:", error);
+    tbody.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-red-700">Gagal memuat komik: ' + String(error.message).replace(/[<>&]/g, "") + '</td></tr>';
+  }
+}
+
+async function deleteComicEverywhere(comicId, title, button) {
+  const confirmed = confirm('Hapus komik "' + title + '" dari Firestore dan Google Drive?\n\nData dan berkas PDF/sampul terkait akan dihapus. Tindakan ini tidak dapat dibatalkan.');
+  if (!confirmed) return;
+  if (!activeUser) {
+    alert("Sesi administrator tidak aktif. Silakan login kembali.");
+    return;
+  }
+  button.disabled = true;
+  button.textContent = "Menghapus...";
+  try {
+    const idToken = await activeUser.getIdToken(true);
+    const response = await fetch(UPLOAD_API, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ action: "deleteComic", comicId, idToken })
+    });
+    const result = await response.json();
+    if (!result.success) throw new Error(result.message || "Penghapusan gagal.");
+    alert("Komik dan berkas terkait berhasil dihapus dari Firestore dan Google Drive.");
+    await loadAdminComics();
+  } catch (error) {
+    alert("Belum berhasil menghapus: " + error.message);
+    button.disabled = false;
+    button.textContent = "Hapus";
+  }
+}
+
 async function loadCategories() {
   categoryList.textContent = "Memuat kategori...";
   try {
@@ -605,6 +654,7 @@ async function removeCategory(id, name) {
   try {
     await deleteDoc(doc(db, "categories", id));
     await loadCategories();
+loadAdminComics();
     categoryStatus.textContent = "Kategori berhasil dihapus.";
   } catch (error) {
     categoryStatus.textContent = "Gagal menghapus kategori: " + error.message;
