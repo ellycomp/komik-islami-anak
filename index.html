@@ -1,0 +1,303 @@
+<!DOCTYPE html><html lang="id"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Beranda — Komik Islami Anak</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">/** @type {import('tailwindcss').Config} */
+globalThis.tailwind = globalThis.tailwind || {};
+globalThis.tailwind.config = {
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        'accent': '#F4C430',
+        'success': '#1B7A4B',
+        'warning': '#D97706',
+        'light-primary': '#006037',
+        'light-on-primary': '#FFFFFF',
+        'light-primary-container': '#1B7A4B',
+        'light-on-primary-container': '#ACFFC8',
+        'light-secondary': '#755B00',
+        'light-on-secondary': '#FFFFFF',
+        'light-secondary-container': '#FCCC38',
+        'light-on-secondary-container': '#6F5600',
+        'light-tertiary': '#8B3840',
+        'light-on-tertiary': '#FFFFFF',
+        'light-tertiary-container': '#A94F57',
+        'light-on-tertiary-container': '#FFE8E8',
+        'light-error': '#BA1A1A',
+        'light-on-error': '#FFFFFF',
+        'light-error-container': '#FFDAD6',
+        'light-on-error-container': '#93000A',
+        'light-background': '#FEF9EC',
+        'light-on-background': '#1D1C14',
+        'light-surface': '#FEF9EC',
+        'light-surface-dim': '#DEDACD',
+        'light-surface-bright': '#FEF9EC',
+        'light-surface-container-lowest': '#FFFFFF',
+        'light-surface-container-low': '#F8F3E6',
+        'light-surface-container': '#F2EEE1',
+        'light-surface-container-high': '#EDE8DB',
+        'light-surface-container-highest': '#E7E2D6',
+        'light-on-surface': '#1D1C14',
+        'light-surface-variant': '#DAE5DA',
+        'light-on-surface-variant': '#3F4941',
+        'light-outline': '#6F7A70',
+        'light-outline-variant': '#BEC9BE',
+        'light-inverse-surface': '#323128',
+        'light-inverse-on-surface': '#F5F0E4',
+        'light-inverse-primary': '#80D9A1',
+        'light-shadow': '#000000',
+        'light-scrim': '#000000',
+        'dark-primary': '#80D9A1',
+        'dark-on-primary': '#00391E',
+        'dark-primary-container': '#1B7A4B',
+        'dark-on-primary-container': '#ACFFC8',
+        'dark-secondary': '#F0C12C',
+        'dark-on-secondary': '#3D2E00',
+        'dark-secondary-container': '#D2A501',
+        'dark-on-secondary-container': '#503D00',
+        'dark-tertiary': '#FFB2B6',
+        'dark-on-tertiary': '#5D1520',
+        'dark-tertiary-container': '#A94F57',
+        'dark-on-tertiary-container': '#FFE8E8',
+        'dark-error': '#FFB4AB',
+        'dark-on-error': '#690005',
+        'dark-error-container': '#93000A',
+        'dark-on-error-container': '#FFDAD6',
+        'dark-background': '#15140C',
+        'dark-on-background': '#E7E2D6',
+        'dark-surface': '#15140C',
+        'dark-surface-dim': '#15140C',
+        'dark-surface-bright': '#3B3930',
+        'dark-surface-container-lowest': '#0F0E08',
+        'dark-surface-container-low': '#1D1C14',
+        'dark-surface-container': '#212018',
+        'dark-surface-container-high': '#2C2A22',
+        'dark-surface-container-highest': '#37352C',
+        'dark-on-surface': '#E7E2D6',
+        'dark-surface-variant': '#3F4941',
+        'dark-on-surface-variant': '#BEC9BE',
+        'dark-outline': '#88948A',
+        'dark-outline-variant': '#3F4941',
+        'dark-inverse-surface': '#E7E2D6',
+        'dark-inverse-on-surface': '#323128',
+        'dark-inverse-primary': '#006D3F',
+        'dark-shadow': '#000000',
+        'dark-scrim': '#000000',
+      },
+      borderRadius: {
+        'sm': '8px',
+        'DEFAULT': '12px',
+        'md': '16px',
+        'lg': '20px',
+        'xl': '28px',
+        'full': '9999px',
+      },
+      spacing: {
+        'gutter-xs': '4px',
+        'gutter-sm': '8px',
+        'gutter-md': '16px',
+        'gutter-lg': '24px',
+        'gutter-xl': '32px',
+        'section': '40px',
+        'page-margin': '16px',
+      },
+      fontFamily: {
+        'display': ['"Boogaloo"', 'sans-serif'],
+        'headline': ['"Boogaloo"', 'sans-serif'],
+        'title': ['"Capriola"', 'sans-serif'],
+        'body': ['"Capriola"', 'sans-serif'],
+        'label': ['"Capriola"', 'sans-serif'],
+      },
+      fontSize: {
+        'display-lg': ['40px', { lineHeight: '48px', letterSpacing: '0px', fontWeight: '400' }],
+        'display-lg-mobile': ['30px', { lineHeight: '36px', letterSpacing: '0px', fontWeight: '400' }],
+        'headline-lg': ['32px', { lineHeight: '38px', letterSpacing: '0px', fontWeight: '400' }],
+        'headline-md': ['24px', { lineHeight: '30px', letterSpacing: '0px', fontWeight: '400' }],
+        'headline-sm': ['20px', { lineHeight: '26px', letterSpacing: '0px', fontWeight: '400' }],
+        'title-lg': ['18px', { lineHeight: '24px', letterSpacing: '0px', fontWeight: '400' }],
+        'title-md': ['16px', { lineHeight: '22px', letterSpacing: '0px', fontWeight: '400' }],
+        'body-lg': ['16px', { lineHeight: '24px', letterSpacing: '0px', fontWeight: '400' }],
+        'body-md': ['14px', { lineHeight: '21px', letterSpacing: '0px', fontWeight: '400' }],
+        'label-lg': ['14px', { lineHeight: '20px', letterSpacing: '0.1px', fontWeight: '400' }],
+        'label-md': ['12px', { lineHeight: '16px', letterSpacing: '0.2px', fontWeight: '400' }],
+        'label-sm': ['12px', { lineHeight: '16px', letterSpacing: '0.2px', fontWeight: '700' }],
+      },
+      transitionDuration: {
+        'state-change': '120ms',
+        'surface-enter': '240ms',
+        'surface-exit': '150ms',
+      },
+      transitionDelay: {
+        'state-change': '0ms',
+        'surface-enter': '0ms',
+        'surface-exit': '0ms',
+      },
+      transitionTimingFunction: {
+        'state-change': 'ease-out',
+        'surface-enter': 'cubic-bezier(0.2, 0, 0, 1)',
+        'surface-exit': 'cubic-bezier(0.3, 0, 1, 1)',
+      },
+    },
+  },
+};
+if (typeof module !== 'undefined') module.exports = globalThis.tailwind.config;
+</script>
+  <link href="https://fonts.googleapis.com/css2?family=Boogaloo&amp;family=Capriola&amp;family=Space+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet">
+  <style>.material-symbols-outlined, .material-symbols-rounded, .material-symbols-sharp, .material-icons { display: inline-block; width: 1em; height: 1em; line-height: 1 !important; box-sizing: content-box; overflow: hidden; white-space: nowrap; direction: ltr; vertical-align: middle; }</style>
+<meta name="theme-color" content="#176b4d"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="manifest" href="/manifest.webmanifest"><link rel="icon" href="/icons/icon-192.svg" type="image/svg+xml"></head>
+<body class="bg-light-surface text-light-on-surface antialiased">
+  <div class="min-h-[884px] max-w-md mx-auto flex flex-col bg-light-surface" data-stitch-vh="min-h-[884px]===min-h-screen">
+
+    <!-- Header Shell -->
+    <header class="sticky top-0 z-20 bg-light-surface border-b border-light-outline-variant px-page-margin py-gutter-sm flex items-center justify-between gap-gutter-sm">
+      <div class="flex items-center gap-gutter-sm">
+        <div class="w-10 h-10 rounded-md bg-light-primary text-light-on-primary flex items-center justify-center shadow-sm">
+          <span class="material-symbols-outlined text-[24px]" style="font-variation-settings: &#39;FILL&#39; 1;" aria-hidden="true">auto_stories</span>
+        </div>
+        <div class="flex flex-col">
+          <span class="font-headline text-headline-sm text-light-primary leading-none" data-design-text-token="headline-sm">Komik Islami Anak</span>
+          <span class="font-body text-label-md text-light-on-surface-variant" data-design-text-token="label-md">Usia 5–12 Tahun</span>
+        </div>
+      </div>
+      <a href="/login_administrator/index.html" aria-label="Masuk Administrator" data-component-id="button-icon" data-component-type="button" data-component-variant="icon" class="inline-flex items-center justify-center w-11 h-11 rounded-full bg-light-surface-container-lowest text-light-on-surface border border-light-outline-variant hover:bg-light-surface-container-low transition-colors duration-state-change ease-state-change">
+        <span class="material-symbols-outlined text-[22px]" aria-hidden="true">admin_panel_settings</span>
+      </a>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 px-page-margin py-gutter-md flex flex-col gap-gutter-lg">
+
+      <!-- Sapaan & Pencarian -->
+      <section class="flex flex-col gap-gutter-sm">
+        <h1 class="font-headline text-display-lg-mobile text-light-on-surface text-balance" data-design-text-token="display-lg-mobile">
+          Assalamu&#39;alaikum, Adik!
+        </h1>
+        <p class="font-body text-body-md text-light-on-surface-variant text-pretty" data-design-text-token="body-md">
+          Yuk, baca kisah teladan penuh hikmah hari ini.
+        </p>
+
+        <!-- COMPONENT: input-field-icon -->
+        <label data-component-id="input-field-icon" data-component-type="input-field" data-component-variant="with-icon" class="flex flex-col gap-gutter-xs w-full mt-gutter-xs">
+          <span class="sr-only font-body text-label-md" data-design-text-token="label-md">Cari Komik</span>
+          <div class="relative flex items-center">
+            <span class="material-symbols-outlined absolute left-gutter-md text-[20px] text-light-outline pointer-events-none" aria-hidden="true">search</span>
+            <input type="search" placeholder="Cari judul atau kisah komik..." class="w-full min-h-12 pl-11 pr-gutter-md py-gutter-sm rounded-full bg-light-surface-container-lowest border border-light-outline-variant text-light-on-surface font-body text-body-md placeholder:text-light-outline focus:border-light-primary focus:ring-2 focus:ring-light-primary/20">
+          </div>
+        </label>
+      </section>
+
+      <!-- Hero Banner Komik Pilihan -->
+      <section class="rounded-xl bg-light-primary text-light-on-primary overflow-hidden shadow-sm">
+        <div class="relative h-44 w-full">
+          <img src="https://lh3.googleusercontent.com/aida/ALJJyrDQjj99iwKfe11tryIgPekFKju0N9dRl1WuY7dEeB234hU6R_LnyNTlcxWuC5o1GH0fzNpElbQzHO3BcwMWhVfCWe0SGdoUhk8ImfskOuUkT-gv2HOcutw1vbGMl5Q5--s5QFNJi1DzgD1lMW4ABrAg-zGlNaPsADfhf1Z9A-pwsTXv74jhw0o8zs3fZArqXSh4RF5s719RPrGsCE7Y-2JdSATacfM9GOSSsuZ5Z_4e6nRObfArdHITd7Q" alt="Dua anak Muslim ceria membaca komik bersama di taman dekat masjid" class="w-full h-full object-cover">
+          <span class="absolute top-gutter-sm left-gutter-sm px-gutter-sm py-gutter-xs rounded-full bg-light-secondary-container text-light-on-secondary-container font-body text-label-md" data-design-text-token="label-md">
+            Pilihan Minggu Ini
+          </span>
+        </div>
+        <div class="p-gutter-md flex flex-col gap-gutter-sm">
+          <h2 class="font-headline text-headline-md text-light-on-primary" data-design-text-token="headline-md">
+            Kisah Kejujuran Ali di Pasar
+          </h2>
+          <p class="font-body text-body-md text-light-on-primary-container text-pretty" data-design-text-token="body-md">
+            Ikuti serunya Ali mengembalikan dompet yang hilang dengan hati yang jujur.
+          </p>
+          <div class="pt-gutter-xs">
+            <a href="/detail_komik/index.html" data-component-id="button-secondary-with-icon" data-component-type="button" data-component-variant="secondary" class="inline-flex items-center justify-center gap-gutter-sm min-h-11 px-gutter-lg py-gutter-sm rounded-full bg-light-secondary-container text-light-on-secondary-container font-body text-label-lg shadow-sm hover:opacity-95 active:scale-95 transition-transform duration-state-change ease-state-change">
+              <span class="material-symbols-outlined text-[20px]" aria-hidden="true">menu_book</span>
+              <span data-design-text-token="label-lg">Baca Sekarang</span>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Kategori Populer -->
+      <section class="flex flex-col gap-gutter-sm">
+        <div class="flex items-center justify-between">
+          <h2 class="font-headline text-headline-md text-light-on-surface" data-design-text-token="headline-md">Kategori Cerita</h2>
+          <a href="/perpustakaan/index.html" class="font-body text-label-md text-light-primary hover:underline" data-design-text-token="label-md">Lihat Semua</a>
+        </div>
+        <div class="flex items-center gap-gutter-sm overflow-x-auto pb-gutter-xs">
+          <!-- COMPONENT: chip-filter-active -->
+          <button data-component-id="chip-filter-active" data-component-type="chip" data-component-variant="filter" aria-pressed="true" type="button" class="shrink-0 inline-flex items-center gap-gutter-xs min-h-10 px-gutter-md py-gutter-xs rounded-full bg-light-primary text-light-on-primary font-body text-label-md">
+            <span data-design-text-token="label-md">Semua</span>
+          </button>
+          <!-- COMPONENT: chip-action -->
+          <button data-component-id="chip-action" data-component-type="chip" data-component-variant="action" type="button" class="shrink-0 inline-flex items-center gap-gutter-xs min-h-10 px-gutter-md py-gutter-xs rounded-full bg-light-surface-container-lowest text-light-on-surface border border-light-outline-variant font-body text-label-md">
+            <span data-design-text-token="label-md">Akhlak Mulia</span>
+          </button>
+          <button data-component-id="chip-action" data-component-type="chip" data-component-variant="action" type="button" class="shrink-0 inline-flex items-center gap-gutter-xs min-h-10 px-gutter-md py-gutter-xs rounded-full bg-light-surface-container-lowest text-light-on-surface border border-light-outline-variant font-body text-label-md">
+            <span data-design-text-token="label-md">Doa Harian</span>
+          </button>
+          <button data-component-id="chip-action" data-component-type="chip" data-component-variant="action" type="button" class="shrink-0 inline-flex items-center gap-gutter-xs min-h-10 px-gutter-md py-gutter-xs rounded-full bg-light-surface-container-lowest text-light-on-surface border border-light-outline-variant font-body text-label-md">
+            <span data-design-text-token="label-md">Kisah Teladan</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Komik Terbaru -->
+      <section class="flex flex-col gap-gutter-sm">
+        <h2 class="font-headline text-headline-md text-light-on-surface" data-design-text-token="headline-md">Komik Terbaru</h2>
+        <div class="grid grid-cols-2 gap-gutter-md items-stretch">
+          <!-- COMPONENT: card-interactive -->
+          <a href="/detail_komik/index.html" data-component-id="card-interactive" data-component-type="card" data-component-variant="interactive" class="h-full rounded-lg bg-light-surface-container-lowest border border-light-outline-variant overflow-hidden shadow-sm hover:border-light-primary transition-colors duration-state-change ease-state-change flex flex-col">
+            <img src="https://lh3.googleusercontent.com/aida/ALJJyrBX_yEDwUoBwUQzD6fXnzonR_uqfcN9hIsD4HEVYFrH8oPcYLdc1HHgEdN_V-NOhJ2p_ORzQOzxFkCS4dpHyUgjR_KaTcU3J0zj3mFwomB1XhCTPztnsmXgPfF6ZaBKIoAOjpJ_tWkNjp2SJyebrfksASg1nWzCR3F7ppZL-XJp1ldD9YEQVxO7gVjySHXK785R2_J5zgZP1tdtwSanYfRec9NGz5R_sdGP12NLuhn5RXGGAS4oYo6ZYl_UsJY" alt="Sampul komik Kejujuran Ali" class="w-full h-36 object-cover">
+            <div class="p-gutter-sm flex-1 flex flex-col gap-gutter-xs">
+              <span class="inline-block self-start px-gutter-sm py-gutter-xs rounded-full bg-light-secondary-container text-light-on-secondary-container font-body text-label-md" data-design-text-token="label-md">Akhlak</span>
+              <h3 class="font-headline text-headline-sm text-light-on-surface" data-design-text-token="headline-sm">Kejujuran Ali</h3>
+              <p class="font-body text-label-md text-light-on-surface-variant mt-auto" data-design-text-token="label-md">Usia 7–10 Thn</p>
+            </div>
+          </a>
+
+          <a href="/detail_komik/index.html" data-component-id="card-interactive" data-component-type="card" data-component-variant="interactive" class="h-full rounded-lg bg-light-surface-container-lowest border border-light-outline-variant overflow-hidden shadow-sm hover:border-light-primary transition-colors duration-state-change ease-state-change flex flex-col">
+            <img src="https://lh3.googleusercontent.com/aida/ALJJyrC8wmg6xcaXkArkiK8xUZ3w_tqBJ9vJUOPqq2m3vvn85sKA7h0WUI9g5htg9iynmV6jEI7EqHaIcGzcng3BzbzP_C-seLuyu7KCKsuB3_VIEfMLRUMY83xxgosAze2BIt_0HUIXjQWRSzXjvJ5LzAEsKQzyAvKur553YcadiZ1XUQ0EtcbPi_LmfVclusnPyrF9zJvS2uJoB_7g32FJUDA2UoM78RGPW0cUefQnh7dwE6_CRkicAaIJhg" alt="Sampul komik Doa Sebelum Tidur" class="w-full h-36 object-cover">
+            <div class="p-gutter-sm flex-1 flex flex-col gap-gutter-xs">
+              <span class="inline-block self-start px-gutter-sm py-gutter-xs rounded-full bg-light-surface-variant text-light-on-surface-variant font-body text-label-md" data-design-text-token="label-md">Doa Harian</span>
+              <h3 class="font-headline text-headline-sm text-light-on-surface" data-design-text-token="headline-sm">Doa Sebelum Tidur</h3>
+              <p class="font-body text-label-md text-light-on-surface-variant mt-auto" data-design-text-token="label-md">Usia 5–8 Thn</p>
+            </div>
+          </a>
+
+          <a href="/detail_komik/index.html" data-component-id="card-interactive" data-component-type="card" data-component-variant="interactive" class="h-full rounded-lg bg-light-surface-container-lowest border border-light-outline-variant overflow-hidden shadow-sm hover:border-light-primary transition-colors duration-state-change ease-state-change flex flex-col">
+            <img src="https://lh3.googleusercontent.com/aida/ALJJyrDg93aZ3njV0pK3LebwKSl4_roGIK0etaACrfjp0sX2w-Z3eF6o8NMJJushTrSXSI626NaoZ7qJTje601zwf7IdM2eDcJDAZZnD9ks-9yJ07AJPqZne6J_fphVaxlfusgdubrQocpH2vUU2i8Tg6l16SUimwR-kc3mqrSKQmIcjsQhwDPzKWri2_aHK3BF4tStmzl1kbkO2A3kiJ4Ec7d_w1IwDZE2qOWQGDdFCDFmgVbcoHsOPsNd1pwo" alt="Sampul komik Semut Pekerja Keras" class="w-full h-36 object-cover">
+            <div class="p-gutter-sm flex-1 flex flex-col gap-gutter-xs">
+              <span class="inline-block self-start px-gutter-sm py-gutter-xs rounded-full bg-light-secondary-container text-light-on-secondary-container font-body text-label-md" data-design-text-token="label-md">Kisah Alam</span>
+              <h3 class="font-headline text-headline-sm text-light-on-surface" data-design-text-token="headline-sm">Semut Pekerja</h3>
+              <p class="font-body text-label-md text-light-on-surface-variant mt-auto" data-design-text-token="label-md">Usia 6–9 Thn</p>
+            </div>
+          </a>
+
+          <a href="/detail_komik/index.html" data-component-id="card-interactive" data-component-type="card" data-component-variant="interactive" class="h-full rounded-lg bg-light-surface-container-lowest border border-light-outline-variant overflow-hidden shadow-sm hover:border-light-primary transition-colors duration-state-change ease-state-change flex flex-col">
+            <img src="https://lh3.googleusercontent.com/aida/ALJJyrCtKbuqsSEargYaBuhIOLRZb1is41ZO73weLXRe5kunI7-ibVs508dG7INkNAn5Hp4t3cJqXsSj04cVZ2ROZ25B_qiWstbUANO8n0SyJcLH4jNj4k0RiOqCCwvm9_BVpOyWvM069JNJC4QVy9E9NbcpdIru09jvv6iWtiuFwBdLi8d6cyFzYNZeR2s-IfVZUS1CltL4bABS793x-TJsr0DcN_Pav-Wayw-qT8SzbJFvMhAAXMHNmELRfXaVi3M" alt="Sampul komik Lentera Ramadhan" class="w-full h-36 object-cover">
+            <div class="p-gutter-sm flex-1 flex flex-col gap-gutter-xs">
+              <span class="inline-block self-start px-gutter-sm py-gutter-xs rounded-full bg-light-surface-variant text-light-on-surface-variant font-body text-label-md" data-design-text-token="label-md">Ibadah</span>
+              <h3 class="font-headline text-headline-sm text-light-on-surface" data-design-text-token="headline-sm">Lentera Ramadhan</h3>
+              <p class="font-body text-label-md text-light-on-surface-variant mt-auto" data-design-text-token="label-md">Usia 8–12 Thn</p>
+            </div>
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <!-- Bottom Navigation Shell -->
+    <nav aria-label="Navigasi Utama" class="sticky bottom-0 z-20 bg-light-surface-container-lowest border-t border-light-outline-variant px-gutter-sm py-gutter-xs grid grid-cols-3 gap-gutter-xs">
+      <a href="/beranda/index.html" aria-current="page" class="flex flex-col items-center justify-center min-h-[52px] rounded-lg bg-light-surface-variant text-light-primary py-gutter-xs">
+        <span class="material-symbols-outlined text-[24px]" style="font-variation-settings: &#39;FILL&#39; 1;" aria-hidden="true">home</span>
+        <span class="font-body text-label-md" data-design-text-token="label-md">Beranda</span>
+      </a>
+      <a href="/perpustakaan/index.html" class="flex flex-col items-center justify-center min-h-[52px] rounded-lg text-light-on-surface-variant hover:bg-light-surface-container-low py-gutter-xs">
+        <span class="material-symbols-outlined text-[24px]" aria-hidden="true">menu_book</span>
+        <span class="font-body text-label-md" data-design-text-token="label-md">Perpustakaan</span>
+      </a>
+      <a href="/favorit_riwayat/index.html" class="flex flex-col items-center justify-center min-h-[52px] rounded-lg text-light-on-surface-variant hover:bg-light-surface-container-low py-gutter-xs">
+        <span class="material-symbols-outlined text-[24px]" aria-hidden="true">favorite</span>
+        <span class="font-body text-label-md" data-design-text-token="label-md">Favorit</span>
+      </a>
+    </nav>
+
+  </div>
+
+
+<script src="/app.js"></script></body></html>
