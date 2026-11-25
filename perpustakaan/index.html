@@ -298,8 +298,8 @@ function matches(card){
 }
 function apply(){
  let count=0;
- cards.forEach(card=>{const show=matches(card);card.hidden=!show;card.classList.toggle("hidden",!show);if(show)count++;});
- empty.classList.toggle("hidden",count>0);
+ cards.forEach(card=>{const show=matches(card);card.hidden=!show;card.style.display=show?"":"none";if(show)count++;});
+ empty.hidden=count>0;empty.style.display=count>0?"none":"block";
  categoryBox.querySelectorAll("button[data-category]").forEach(b=>{
   const on=b.dataset.category===selectedCategory;b.setAttribute("aria-pressed",String(on));
   b.className=on?"shrink-0 inline-flex items-center min-h-10 px-gutter-md py-gutter-xs rounded-full bg-light-primary text-light-on-primary font-body text-label-md":"shrink-0 inline-flex items-center min-h-10 px-gutter-md py-gutter-xs rounded-full bg-light-surface-container-lowest text-light-on-surface border border-light-outline-variant font-body text-label-md";
