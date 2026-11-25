@@ -397,8 +397,9 @@ onAuthStateChanged(auth, async (user) => {
       return;
     }
     activeUser = user;
-    await loadCategories();
-    await loadAdminComics();
+    // Muat daftar komik lebih dahulu agar tidak tertahan proses kategori.
+    loadAdminComics();
+    loadCategories();
   } catch (e) {
     document.body.innerHTML = '<main style="padding:24px;font-family:sans-serif">Tidak dapat memverifikasi akses administrator. Periksa koneksi dan aturan Firestore, lalu muat ulang halaman.</main>';
   }
@@ -524,7 +525,10 @@ async function loadAdminComics() {
   const tbody = document.getElementById("admin-comic-list");
   tbody.innerHTML = '<tr><td colspan="5" class="py-4 text-center">Memuat daftar komik...</td></tr>';
   try {
-    const snapshot = await getDocs(collection(db, "comics"));
+    const snapshot = await Promise.race([
+      getDocs(collection(db, "comics")),
+      new Promise((_, reject) => setTimeout(() => reject(new Error("Koneksi Firestore terlalu lama. Periksa internet dan aturan Firestore.")), 15000))
+    ]);
     tbody.replaceChildren();
     if (snapshot.empty) {
       tbody.innerHTML = '<tr><td colspan="5" class="py-4 text-center">Belum ada data komik.</td></tr>';
