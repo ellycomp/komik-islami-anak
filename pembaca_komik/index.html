@@ -267,15 +267,28 @@ async function goTo(n){
  page=Math.max(1,Math.min(total,n));
  await renderPage();
 }
-// Tombol navigasi: delegasi klik pada dokumen agar tetap aktif di semua ukuran layar
+// Navigasi tombol: gunakan event click standar agar kompatibel dengan browser Android.
+function bindReaderButton(button, direction) {
+  button.disabled = false;
+  button.style.position = "relative";
+  button.style.zIndex = "1000";
+  button.style.pointerEvents = "auto";
+  button.style.touchAction = "manipulation";
+  button.addEventListener("click", async (event) => {
+    event.preventDefault();
+    if (!pdf) {
+      counter.textContent = "Komik masih dimuat. Tunggu sebentar.";
+      return;
+    }
+    await navigateByButton(direction);
+  });
+}
 let buttonNavigationBusy = false;
 async function navigateByButton(direction) {
   if (!pdf || buttonNavigationBusy) return;
   const target = Math.max(1, Math.min(total, page + direction));
   if (target === page) return;
   buttonNavigationBusy = true;
-  prev.disabled = true;
-  next.disabled = true;
   try {
     await goTo(target);
   } catch (err) {
@@ -286,19 +299,8 @@ async function navigateByButton(direction) {
     updateControls();
   }
 }
-// Navigasi tombol dengan event click bawaan browser (HP, tablet, dan desktop)
-prev.onclick = function(event) {
-  event.preventDefault();
-  navigateByButton(-1);
-};
-next.onclick = function(event) {
-  event.preventDefault();
-  navigateByButton(1);
-};
-prev.style.pointerEvents = "auto";
-next.style.pointerEvents = "auto";
-prev.style.touchAction = "manipulation";
-next.style.touchAction = "manipulation";
+bindReaderButton(prev, -1);
+bindReaderButton(next, 1);
 // Navigasi swipe HP: tangkap sentuhan di dokumen agar tidak hilang saat canvas dirender ulang
 let navigationBusy = false;
 let touchStart = null;
