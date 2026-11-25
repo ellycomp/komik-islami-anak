@@ -258,8 +258,13 @@ if (typeof module !== 'undefined') module.exports = globalThis.tailwind.config;
           <div class="rounded-lg border-2 border-dashed border-light-outline-variant bg-light-surface-container-low p-gutter-lg flex flex-col items-center text-center gap-gutter-xs">
             <span class="material-symbols-outlined text-[36px] text-light-primary" aria-hidden="true">upload_file</span>
             <p class="font-body text-body-md text-light-on-surface">Pilih berkas gambar (JPG/PNG) atau dokumen PDF</p>
-            <input id="comic-file" type="file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" class="w-full text-sm">
-            <span class="font-body text-label-md text-light-on-surface-variant">Maksimal 25 MB per komik</span>
+            <input id="comic-file" type="file" accept=".pdf,application/pdf" class="w-full text-sm">
+            <span class="font-body text-label-md text-light-on-surface-variant">Pilih satu file PDF, maksimal 25 MB. Sampul diambil dari halaman pertama.</span>
+          </div>
+          <div id="cover-preview-box" class="hidden rounded-lg border border-light-outline-variant p-gutter-md flex flex-col gap-gutter-sm">
+            <p class="font-body text-label-md text-light-on-surface">Pratinjau sampul otomatis (halaman pertama PDF)</p>
+            <img id="cover-preview" alt="Pratinjau sampul komik" class="w-40 max-h-60 object-contain rounded-md border border-light-outline-variant mx-auto">
+            <p id="cover-preview-status" class="text-sm text-light-on-surface-variant text-center"></p>
           </div>
           <p id="upload-status" role="status" aria-live="polite" class="text-sm text-light-on-surface-variant"></p>
 
@@ -341,6 +346,50 @@ import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/
 import { doc, getDoc, collection, getDocs, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const UPLOAD_API = "https://script.google.com/macros/s/AKfycbwvDWuXKGW-kvxsIfVmHA6b9vy2NIrNFj4sHbx94BphRF9OPcN1TcZz76fBJ1jo4Gky_g/exec";
+const PDFJS_VERSION = "3.11.174";
+let generatedCoverBlob = null;
+const filePicker = document.getElementById("comic-file");
+filePicker.addEventListener("change", async () => {
+  const file = filePicker.files[0];
+  const box = document.getElementById("cover-preview-box");
+  const preview = document.getElementById("cover-preview");
+  const message = document.getElementById("cover-preview-status");
+  generatedCoverBlob = null;
+  box.classList.remove("hidden");
+  if (!file) { box.classList.add("hidden"); return; }
+  if (file.type !== "application/pdf") {
+    preview.removeAttribute("src");
+    message.textContent = "Untuk sampul otomatis, silakan pilih file PDF.";
+    return;
+  }
+  if (file.size > 25 * 1024 * 1024) {
+    preview.removeAttribute("src");
+    message.textContent = "PDF melebihi batas 25 MB.";
+    return;
+  }
+  message.textContent = "Sedang membuat pratinjau halaman pertama...";
+  try {
+    const pdfjs = await import("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/" + PDFJS_VERSION + "/pdf.min.js");
+    pdfjs.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/" + PDFJS_VERSION + "/pdf.worker.min.js";
+    const bytes = await file.arrayBuffer();
+    const pdf = await pdfjs.getDocument({data: bytes}).promise;
+    const page = await pdf.getPage(1);
+    const viewport = page.getViewport({scale: 1.5});
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    canvas.width = Math.ceil(viewport.width);
+    canvas.height = Math.ceil(viewport.height);
+    await page.render({canvasContext: context, viewport}).promise;
+    generatedCoverBlob = await new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", 0.88));
+    preview.src = URL.createObjectURL(generatedCoverBlob);
+    message.textContent = "Pratinjau berhasil dibuat. Sampul ini berasal dari halaman pertama PDF.";
+    pdf.destroy();
+  } catch (error) {
+    preview.removeAttribute("src");
+    message.textContent = "PDF tidak dapat dibaca untuk membuat sampul: " + error.message;
+  }
+});
+
 let activeUser = null;
 
 onAuthStateChanged(auth, async (user) => {
