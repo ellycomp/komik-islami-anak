@@ -179,7 +179,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.tailwind.config;
           <span class="sr-only font-body text-label-md" data-design-text-token="label-md">Cari di Perpustakaan</span>
           <div class="relative flex items-center">
             <span class="material-symbols-outlined absolute left-gutter-md text-[20px] text-light-outline pointer-events-none" aria-hidden="true">search</span>
-            <input type="search" placeholder="Ketik judul komik atau tema..." class="w-full min-h-12 pl-11 pr-gutter-md py-gutter-sm rounded-full bg-light-surface-container-lowest border border-light-outline-variant text-light-on-surface font-body text-body-md placeholder:text-light-outline focus:border-light-primary focus:ring-2 focus:ring-light-primary/20">
+            <input id="library-search" type="search" placeholder="Ketik judul komik atau tema..." class="w-full min-h-12 pl-11 pr-gutter-md py-gutter-sm rounded-full bg-light-surface-container-lowest border border-light-outline-variant text-light-on-surface font-body text-body-md placeholder:text-light-outline focus:border-light-primary focus:ring-2 focus:ring-light-primary/20">
           </div>
         </label>
       </section>
@@ -277,29 +277,36 @@ if (typeof module !== 'undefined') module.exports = globalThis.tailwind.config;
 
 <script type="module">
 import { db } from "/komik-islami-anak/firebase-config.js";
-import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const categoryBox=document.getElementById("library-category-filters");
 const ageBox=document.getElementById("library-age-filters");
 const grid=document.getElementById("library-comic-grid");
 const empty=document.getElementById("library-empty-state");
-const cards=Array.from(grid.querySelectorAll(":scope > a"));
+const searchInput=document.querySelector('input[type="search"]');
 let selectedCategory="__all", selectedAge="__all";
 const aliases={"Akhlak Mulia":"Akhlak"};
+let cards=[];
 
+function refreshCards(){
+ cards=Array.from(grid.querySelectorAll(":scope > a"));
+}
 function matches(card){
- const badge=card.querySelector("span.inline-block")?.textContent.trim()||"";
+ const badge=card.dataset.category || card.querySelector("span.inline-block")?.textContent.trim() || "";
  const wanted=aliases[selectedCategory]||selectedCategory;
  const categoryOK=selectedCategory==="__all"||badge.toLocaleLowerCase("id")===wanted.toLocaleLowerCase("id");
  const age=(card.dataset.age||"").trim();
- // Kartu tanpa data usia tidak ditampilkan saat filter usia tertentu dipilih.
  const ageOK=selectedAge==="__all"||(age!==""&&age.split(",").map(x=>x.trim()).includes(selectedAge));
- return categoryOK&&ageOK;
+ const term=(searchInput?.value||"").trim().toLocaleLowerCase("id");
+ const title=card.dataset.title || card.querySelector("h2")?.textContent || "";
+ const searchOK=!term||title.toLocaleLowerCase("id").includes(term)||badge.toLocaleLowerCase("id").includes(term);
+ return categoryOK&&ageOK&&searchOK;
 }
 function apply(){
  let count=0;
  cards.forEach(card=>{const show=matches(card);card.hidden=!show;card.style.display=show?"":"none";if(show)count++;});
  empty.hidden=count>0;empty.style.display=count>0?"none":"block";
+ empty.textContent=count===0?"Belum ada komik yang sesuai.":"";
  categoryBox.querySelectorAll("button[data-category]").forEach(b=>{
   const on=b.dataset.category===selectedCategory;b.setAttribute("aria-pressed",String(on));
   b.className=on?"shrink-0 inline-flex items-center min-h-10 px-gutter-md py-gutter-xs rounded-full bg-light-primary text-light-on-primary font-body text-label-md":"shrink-0 inline-flex items-center min-h-10 px-gutter-md py-gutter-xs rounded-full bg-light-surface-container-lowest text-light-on-surface border border-light-outline-variant font-body text-label-md";
@@ -309,8 +316,57 @@ function apply(){
   b.className=on?"shrink-0 inline-flex items-center min-h-10 px-gutter-md py-gutter-xs rounded-full bg-light-secondary-container text-light-on-secondary-container font-body text-label-md":"shrink-0 inline-flex items-center min-h-10 px-gutter-md py-gutter-xs rounded-full bg-light-surface-container-lowest text-light-on-surface border border-light-outline-variant font-body text-label-md";
  });
 }
+function makeComicCard(doc){
+ const d=doc.data();
+ const a=document.createElement("a");
+ a.href="/komik-islami-anak/detail_komik/index.html?id="+encodeURIComponent(doc.id);
+ a.dataset.age=String(d.age||"");
+ a.dataset.category=String(d.category||"");
+ a.dataset.title=String(d.title||"");
+ a.className="h-full rounded-lg bg-light-surface-container-lowest border border-light-outline-variant overflow-hidden shadow-sm hover:border-light-primary flex flex-col";
+ const img=document.createElement("img");
+ img.src=d.coverUrl||"";
+ img.alt="Sampul "+(d.title||"komik");
+ img.loading="lazy";
+ img.className="w-full h-36 object-cover bg-light-surface-container";
+ img.onerror=()=>{img.style.display="none";};
+ const body=document.createElement("div");
+ body.className="p-gutter-sm flex-1 flex flex-col gap-gutter-xs";
+ const badge=document.createElement("span");
+ badge.className="inline-block self-start px-gutter-sm py-gutter-xs rounded-full bg-light-secondary-container text-light-on-secondary-container font-body text-label-md";
+ badge.textContent=d.category||"Komik";
+ const title=document.createElement("h2");
+ title.className="font-headline text-headline-sm text-light-on-surface";
+ title.textContent=d.title||"Tanpa judul";
+ const age=document.createElement("p");
+ age.className="font-body text-label-md text-light-on-surface-variant mt-auto";
+ age.textContent=d.age?d.age.replace("-","–")+" Tahun":"";
+ body.append(badge,title,age);
+ a.append(img,body);
+ return a;
+}
+async function loadComics(){
+ try{
+  const q=query(collection(db,"comics"),where("status","==","terbit"));
+  const snap=await getDocs(q);
+  const docs=snap.docs.sort((a,b)=>{
+   const ta=a.data().createdAt?.toMillis?.()||0;
+   const tb=b.data().createdAt?.toMillis?.()||0;
+   return tb-ta;
+  });
+  docs.forEach(doc=>grid.insertBefore(makeComicCard(doc),empty));
+  refreshCards();
+  apply();
+ }catch(error){
+  console.error("Gagal memuat komik terbit:",error);
+  empty.hidden=false;
+  empty.style.display="block";
+  empty.textContent="Komik belum dapat dimuat. Silakan muat ulang halaman.";
+ }
+}
 categoryBox.addEventListener("click",e=>{const b=e.target.closest("button[data-category]");if(!b)return;selectedCategory=b.dataset.category;apply();});
 ageBox.addEventListener("click",e=>{const b=e.target.closest("button[data-age]");if(!b)return;selectedAge=b.dataset.age;apply();});
+searchInput?.addEventListener("input",apply);
 async function loadCategories(){
  try{
   const snap=await getDocs(collection(db,"categories"));
@@ -320,12 +376,13 @@ async function loadCategories(){
   names.forEach(name=>{const b=document.createElement("button");b.type="button";b.dataset.category=name;b.textContent=name;b.className="shrink-0 inline-flex items-center min-h-10 px-gutter-md py-gutter-xs rounded-full bg-light-surface-container-lowest text-light-on-surface border border-light-outline-variant font-body text-label-md";categoryBox.appendChild(b);});
   const requested=new URLSearchParams(location.search).get("kategori");
   if(requested&&names.includes(requested))selectedCategory=requested;
-  apply();
- }catch(error){console.error("Kategori:",error);apply();}
+ }catch(error){console.error("Kategori:",error);}
+ apply();
 }
 const requestedAge=new URLSearchParams(location.search).get("usia");
 if(["5-7","8-10","11-12"].includes(requestedAge))selectedAge=requestedAge;
+refreshCards();
 loadCategories();
-apply();
+loadComics();
 </script>
 <script src="/komik-islami-anak/app.js"></script></body></html>
