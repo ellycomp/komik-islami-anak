@@ -290,12 +290,19 @@ if (typeof module !== 'undefined') module.exports = globalThis.tailwind.config;
 
 <script type="module">
 import { db } from "/komik-islami-anak/firebase-config.js";
-import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
 const list = document.getElementById("home-category-list");
-try {
-  const snapshot = await getDocs(collection(db, "categories"));
-  const categories = snapshot.docs.map(d => d.data().name).filter(Boolean).sort((a,b)=>a.localeCompare(b,"id"));
-  list.innerHTML = '<a href="/komik-islami-anak/perpustakaan/index.html" class="shrink-0 inline-flex items-center min-h-10 px-gutter-md rounded-full bg-light-primary text-light-on-primary font-body text-label-md">Semua</a>';
+const cacheKey = "komik-islami-anak-categories";
+
+function showCategories(categories) {
+  list.replaceChildren();
+  const all = document.createElement("a");
+  all.href = "/komik-islami-anak/perpustakaan/index.html";
+  all.className = "shrink-0 inline-flex items-center min-h-10 px-gutter-md rounded-full bg-light-primary text-light-on-primary font-body text-label-md";
+  all.textContent = "Semua";
+  list.appendChild(all);
+
   for (const name of categories) {
     const link = document.createElement("a");
     link.href = "/komik-islami-anak/perpustakaan/index.html?kategori=" + encodeURIComponent(name);
@@ -303,9 +310,38 @@ try {
     link.textContent = name;
     list.appendChild(link);
   }
-  if (!categories.length) list.insertAdjacentHTML("beforeend", '<span class="text-sm">Belum ada kategori.</span>');
-} catch (error) {
-  list.innerHTML = '<span class="text-sm text-light-on-surface-variant">Kategori belum dapat dimuat.</span>';
+  if (!categories.length) {
+    const empty = document.createElement("span");
+    empty.className = "text-sm text-light-on-surface-variant";
+    empty.textContent = "Belum ada kategori.";
+    list.appendChild(empty);
+  }
 }
-</script>
+
+// Tampilkan data terakhir yang tersimpan agar kategori tidak menghilang
+// ketika koneksi Firebase sedang lambat atau terputus.
+try {
+  const cached = JSON.parse(localStorage.getItem(cacheKey) || "[]");
+  if (Array.isArray(cached) && cached.length) showCategories(cached);
+} catch (error) {
+  console.warn("Cache kategori tidak dapat dibaca.", error);
+}
+
+// Dengarkan perubahan Firestore secara langsung.
+onSnapshot(collection(db, "categories"), snapshot => {
+  const categories = snapshot.docs
+    .map(item => item.data().name)
+    .filter(name => typeof name === "string" && name.trim())
+    .sort((a, b) => a.localeCompare(b, "id"));
+  localStorage.setItem(cacheKey, JSON.stringify(categories));
+  showCategories(categories);
+}, error => {
+  console.error("Gagal memuat kategori dari Firebase:", error);
+  if (!list.querySelector("a")) {
+    const message = document.createElement("span");
+    message.className = "text-sm text-light-on-surface-variant";
+    message.textContent = "Kategori sementara tidak tersedia. Periksa koneksi internet.";
+    list.appendChild(message);
+  }
+});</script>
 <script src="/komik-islami-anak/app.js"></script></body></html>
