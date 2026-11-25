@@ -356,6 +356,7 @@ onAuthStateChanged(auth, async (user) => {
       return;
     }
     activeUser = user;
+    await loadCategories();
   } catch (e) {
     document.body.innerHTML = '<main style="padding:24px;font-family:sans-serif">Tidak dapat memverifikasi akses administrator. Periksa koneksi dan aturan Firestore, lalu muat ulang halaman.</main>';
   }
@@ -490,6 +491,7 @@ async function loadCategories() {
 
 async function addCategory() {
   const input = document.getElementById("new-category-name");
+  if (!activeUser) { categoryStatus.textContent = "Menunggu verifikasi administrator. Muat ulang halaman."; return; }
   const name = input.value.trim();
   if (!name) {
     categoryStatus.textContent = "Masukkan nama kategori terlebih dahulu.";
@@ -538,7 +540,6 @@ document.getElementById("add-category").addEventListener("click", addCategory);
 document.getElementById("new-category-name").addEventListener("keydown", event => {
   if (event.key === "Enter") addCategory();
 });
-loadCategories();
 
 </script>
 <script src="/komik-islami-anak/app.js"></script></body></html>
