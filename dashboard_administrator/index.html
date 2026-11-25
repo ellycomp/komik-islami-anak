@@ -398,6 +398,7 @@ onAuthStateChanged(auth, async (user) => {
     }
     activeUser = user;
     await loadCategories();
+    await loadAdminComics();
   } catch (e) {
     document.body.innerHTML = '<main style="padding:24px;font-family:sans-serif">Tidak dapat memverifikasi akses administrator. Periksa koneksi dan aturan Firestore, lalu muat ulang halaman.</main>';
   }
