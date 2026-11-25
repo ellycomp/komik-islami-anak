@@ -153,7 +153,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.tailwind.config;
 
     <!-- Reader Top Bar -->
     <header class="sticky top-0 z-20 bg-light-surface-container-lowest border-b border-light-outline-variant px-page-margin py-gutter-sm flex items-center justify-between gap-gutter-sm">
-      <a href="/detail_komik/index.html" aria-label="Tutup Pembaca Komik" data-component-id="button-icon" data-component-type="button" data-component-variant="icon" class="inline-flex items-center justify-center w-11 h-11 rounded-full bg-light-surface-container-lowest text-light-on-surface border border-light-outline-variant hover:bg-light-surface-container-low">
+      <a href="/komik-islami-anak/perpustakaan/index.html" aria-label="Tutup Pembaca Komik" data-component-id="button-icon" data-component-type="button" data-component-variant="icon" class="inline-flex items-center justify-center w-11 h-11 rounded-full bg-light-surface-container-lowest text-light-on-surface border border-light-outline-variant hover:bg-light-surface-container-low">
         <span class="material-symbols-outlined text-[22px]" aria-hidden="true">arrow_back</span>
       </a>
       <div class="flex flex-col items-center text-center">
@@ -170,25 +170,9 @@ if (typeof module !== 'undefined') module.exports = globalThis.tailwind.config;
       <div id="read-progress" class="h-full bg-light-primary transition-transform duration-state-change" style="width: 18%;"></div>
     </div>
 
-    <!-- Comic Pages Area -->
-    <main class="flex-1 px-page-margin py-gutter-md flex flex-col gap-gutter-md">
-      <article class="rounded-xl bg-light-surface-container-lowest border border-light-outline-variant p-gutter-sm shadow-sm flex flex-col gap-gutter-sm">
-        <img src="https://lh3.googleusercontent.com/aida/ALJJyrDWFnt5HJkgrwRYyLfyonbUh1Xgi7yMMwlLrz-vQnWCb1wnkp0a5-AhwGJcNehagqqWPn6ymQ-OnFIDd1oY1bgMPpWMVyxvKQUeGCpUJkFwEU3qxz70njkSLEcCCN6U9l3Inz7Vxszl1Kxm_El_sWtb8PTGRbRdeitPY0BK6B-6uaHANl442CgUJFd5TFHyMeAkVaZtf_ZNJn-BmxohMdUTsnPGlK_8OFet5vM7s1XR-NbxhHBHIg" alt="Panel 1: Ali dan temannya berjalan menuju masjid di pagi yang cerah" class="w-full rounded-lg object-cover">
-        <div class="rounded-md bg-light-surface-container-low p-gutter-sm border border-light-outline-variant">
-          <p class="font-body text-body-md text-light-on-surface" data-design-text-token="body-md">
-            <strong>Ali:</strong> &#34;Alhamdulillah, udaranya sejuk sekali pagi ini! Ayo kita mampir ke taman sebentar.&#34;
-          </p>
-        </div>
-      </article>
-
-      <article class="rounded-xl bg-light-surface-container-lowest border border-light-outline-variant p-gutter-sm shadow-sm flex flex-col gap-gutter-sm">
-        <img src="https://lh3.googleusercontent.com/aida/ALJJyrBB4squkt129iGv06YstC5gNaTuywzLV3hLDRbFq9HmLHJwIi9F_qbTtsNqv1BC4IFtptmfjOuHO1cVJkfCOIacS7g6zNWJRMOlvutivVH6ppeFpxoG8xf4UogZbd0esv4U_2e0ICvkMS6yiT2pSU0SR-AXys2zHialh8rkjMRH9929JjTbl454h6Ns-qmgtMKQDOyIKwsWcwdn0OmLpPz_T-h53x0GnkWwncI-thcLg1Q5f6S4gQ" alt="Panel 2: Ali menemukan dompet kecil di bangku taman" class="w-full rounded-lg object-cover">
-        <div class="rounded-md bg-light-secondary-container/40 p-gutter-sm border border-light-outline-variant">
-          <p class="font-body text-body-md text-light-on-surface" data-design-text-token="body-md">
-            <strong>Ali:</strong> &#34;Eh, ada dompet siapa tertinggal di bangku ini? Aku harus mengembalikannya!&#34;
-          </p>
-        </div>
-      </article>
+    <!-- Isi komik dari Google Drive -->
+    <main id="reader-content" class="flex-1 px-page-margin py-gutter-md flex flex-col gap-gutter-md">
+      <p class="text-center py-8">Memuat komik...</p>
     </main>
 
     <!-- Reader Bottom Controls -->
@@ -207,4 +191,45 @@ if (typeof module !== 'undefined') module.exports = globalThis.tailwind.config;
   </div>
 
 
-<script src="/app.js"></script></body></html>
+<script type="module">
+import { db } from "/komik-islami-anak/firebase-config.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+const id=new URLSearchParams(location.search).get("id");
+const area=document.getElementById("reader-content");
+async function loadReader(){
+ try{
+  if(!id) throw new Error("ID komik tidak ditemukan. Kembali ke perpustakaan dan pilih komik.");
+  const snap=await getDoc(doc(db,"comics",id));
+  if(!snap.exists()) throw new Error("Data komik tidak ditemukan.");
+  const d=snap.data();
+  document.title=(d.title||"Pembaca Komik")+" — Komik Islami Anak";
+  document.querySelector("header .font-headline").textContent=d.title||"Pembaca Komik";
+  const counter=document.getElementById("page-counter");
+  counter.textContent=d.mimeType==="application/pdf"?"Dokumen PDF":"Komik";
+  const progress=document.getElementById("read-progress");
+  progress.style.width="100%";
+  area.replaceChildren();
+  if(d.mimeType==="application/pdf" && d.fileId){
+    const frame=document.createElement("iframe");
+    frame.src="https://drive.google.com/file/d/"+encodeURIComponent(d.fileId)+"/preview";
+    frame.title=d.title||"Komik PDF";
+    frame.className="w-full rounded-xl border border-light-outline-variant bg-white";
+    frame.style.height="75vh";
+    area.appendChild(frame);
+  } else if(d.fileUrl){
+    const img=document.createElement("img");
+    img.src=d.fileUrl;
+    img.alt=d.title||"Halaman komik";
+    img.className="w-full rounded-xl object-contain bg-white";
+    area.appendChild(img);
+  } else {
+    throw new Error("Berkas komik belum memiliki tautan. Periksa data unggahan di Google Drive.");
+  }
+  document.getElementById("btn-prev").disabled=true;
+  document.getElementById("btn-next").textContent="Selesai membaca";
+  document.getElementById("btn-next").addEventListener("click",()=>location.href="/komik-islami-anak/perpustakaan/index.html");
+ }catch(e){area.textContent=e.message;}
+}
+loadReader();
+</script>
+<script src="/komik-islami-anak/app.js"></script></body></html>
