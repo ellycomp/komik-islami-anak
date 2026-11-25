@@ -264,11 +264,25 @@ async function goTo(n){
 }
 prev.addEventListener("click",()=>goTo(page-1));
 next.addEventListener("click",()=>goTo(page+1));
-area.addEventListener("touchstart",e=>{touchX=e.changedTouches[0].screenX;},{passive:true});
-area.addEventListener("touchend",e=>{
- const delta=e.changedTouches[0].screenX-touchX;
- if(Math.abs(delta)>45) goTo(page+(delta<0?1:-1));
-},{passive:true});
+// Dukungan geser pada layar sentuh dan mouse
+area.style.touchAction = "pan-y";
+let pointerStartX = 0, pointerStartY = 0, pointerStartId = null;
+area.addEventListener("pointerdown", e => {
+ if (e.pointerType === "mouse" && e.button !== 0) return;
+ pointerStartX = e.clientX;
+ pointerStartY = e.clientY;
+ pointerStartId = e.pointerId;
+});
+area.addEventListener("pointerup", e => {
+ if (pointerStartId !== e.pointerId) return;
+ const dx = e.clientX - pointerStartX;
+ const dy = e.clientY - pointerStartY;
+ pointerStartId = null;
+ if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+   goTo(page + (dx < 0 ? 1 : -1));
+ }
+});
+area.addEventListener("pointercancel", () => { pointerStartId = null; });
 document.addEventListener("keydown",e=>{
  if(e.key==="ArrowRight")goTo(page+1);
  if(e.key==="ArrowLeft")goTo(page-1);
