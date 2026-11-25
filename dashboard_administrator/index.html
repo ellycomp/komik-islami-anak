@@ -461,6 +461,17 @@ async function uploadComic(status) {
     });
     const fileData = dataUrl.split(",")[1];
 
+    let coverData = "";
+    if (generatedCoverBlob) {
+      const coverUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error("Sampul gagal dibaca."));
+        reader.readAsDataURL(generatedCoverBlob);
+      });
+      coverData = coverUrl.split(",")[1];
+    }
+
     const response = await fetch(UPLOAD_API, {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -472,6 +483,9 @@ async function uploadComic(status) {
         fileName: file.name,
         mimeType: file.type,
         fileData,
+        coverData,
+        coverMimeType: "image/jpeg",
+        coverFileName: title.replace(/[^a-z0-9-_]/gi, "-") + "-sampul.jpg",
         status
       })
     });
