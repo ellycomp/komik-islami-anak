@@ -291,8 +291,9 @@ function matches(card){
  const badge=card.querySelector("span.inline-block")?.textContent.trim()||"";
  const wanted=aliases[selectedCategory]||selectedCategory;
  const categoryOK=selectedCategory==="__all"||badge.toLocaleLowerCase("id")===wanted.toLocaleLowerCase("id");
- const age=card.dataset.age||"__all";
- const ageOK=selectedAge==="__all"||age==="__all"||age.split(",").includes(selectedAge);
+ const age=(card.dataset.age||"").trim();
+ // Kartu tanpa data usia tidak ditampilkan saat filter usia tertentu dipilih.
+ const ageOK=selectedAge==="__all"||(age!==""&&age.split(",").map(x=>x.trim()).includes(selectedAge));
  return categoryOK&&ageOK;
 }
 function apply(){
