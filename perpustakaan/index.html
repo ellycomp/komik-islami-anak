@@ -298,7 +298,7 @@ function matches(card){
 }
 function apply(){
  let count=0;
- cards.forEach(card=>{const show=matches(card);card.hidden=!show;if(show)count++;});
+ cards.forEach(card=>{const show=matches(card);card.hidden=!show;card.classList.toggle("hidden",!show);if(show)count++;});
  empty.classList.toggle("hidden",count>0);
  categoryBox.querySelectorAll("button[data-category]").forEach(b=>{
   const on=b.dataset.category===selectedCategory;b.setAttribute("aria-pressed",String(on));
