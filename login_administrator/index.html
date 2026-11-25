@@ -166,13 +166,13 @@ if (typeof module !== 'undefined') module.exports = globalThis.tailwind.config;
 
     <!-- Login Card -->
     <section class="rounded-xl bg-light-surface-container-lowest border border-light-outline-variant p-gutter-lg shadow-sm flex flex-col gap-gutter-md">
-      <form action="../dashboard-admin/DashboardAdmin.html" class="flex flex-col gap-gutter-md">
+      <form id="admin-login-form" class="flex flex-col gap-gutter-md">
         <!-- Email -->
         <label data-component-id="input-field-icon" data-component-type="input-field" data-component-variant="with-icon" class="flex flex-col gap-gutter-xs w-full">
           <span class="font-body text-label-md text-light-on-surface" data-design-text-token="label-md">Email Administrator</span>
           <div class="relative flex items-center">
             <span class="material-symbols-outlined absolute left-gutter-md text-[20px] text-light-outline pointer-events-none" aria-hidden="true">mail</span>
-            <input type="email" inputmode="email" required placeholder="admin@komikislamianak.id" class="w-full min-h-12 pl-11 pr-gutter-md py-gutter-sm rounded-md bg-light-surface-container-lowest border border-light-outline-variant text-light-on-surface font-body text-body-md placeholder:text-light-outline focus:border-light-primary focus:ring-2 focus:ring-light-primary/20">
+            <input id="admin-email" type="email" inputmode="email" autocomplete="username" required placeholder="admin@komikislamianak.id" class="w-full min-h-12 pl-11 pr-gutter-md py-gutter-sm rounded-md bg-light-surface-container-lowest border border-light-outline-variant text-light-on-surface font-body text-body-md placeholder:text-light-outline focus:border-light-primary focus:ring-2 focus:ring-light-primary/20">
           </div>
         </label>
 
@@ -191,6 +191,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.tailwind.config;
         <button type="submit" data-component-id="button-primary" data-component-type="button" data-component-variant="primary" class="w-full inline-flex items-center justify-center min-h-12 px-gutter-lg py-gutter-sm rounded-full bg-light-primary text-light-on-primary font-body text-label-lg shadow-sm hover:bg-light-primary-container active:scale-95 transition-transform duration-state-change ease-state-change mt-gutter-xs">
           <span data-design-text-token="label-lg">Masuk ke Dasbor</span>
         </button>
+      <p id="login-message" class="font-body text-body-md text-light-tertiary" role="alert" aria-live="polite"></p>
       </form>
     </section>
 
@@ -204,4 +205,29 @@ if (typeof module !== 'undefined') module.exports = globalThis.tailwind.config;
   </main>
 
 
+<script type="module">
+import { auth, db } from "../firebase-config.js";
+import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+const form=document.getElementById("admin-login-form");
+form.addEventListener("submit",async(e)=>{
+ e.preventDefault();
+ const msg=document.getElementById("login-message");
+ const btn=form.querySelector('button[type="submit"]');
+ msg.textContent="Memeriksa akun...";
+ btn.disabled=true;
+ try{
+  const credential=await signInWithEmailAndPassword(auth,document.getElementById("admin-email").value.trim(),document.getElementById("admin-pass").value);
+  const adminDoc=await getDoc(doc(db,"admins",credential.user.uid));
+  if(!adminDoc.exists()||adminDoc.data().role!=="admin"){
+   await auth.signOut();
+   throw new Error("Akun ini belum terdaftar sebagai administrator.");
+  }
+  location.href="../dashboard_administrator/index.html";
+ }catch(error){
+  msg.textContent=error.code==="auth/invalid-credential"?"Email atau kata sandi tidak sesuai.":(error.message||"Login gagal. Coba lagi.");
+  btn.disabled=false;
+ }
+});
+</script>
 <script src="/app.js"></script></body></html>
