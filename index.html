@@ -219,21 +219,9 @@ if (typeof module !== 'undefined') module.exports = globalThis.tailwind.config;
           <h2 class="font-headline text-headline-md text-light-on-surface" data-design-text-token="headline-md">Kategori Cerita</h2>
           <a href="/komik-islami-anak/perpustakaan/index.html" class="font-body text-label-md text-light-primary hover:underline" data-design-text-token="label-md">Lihat Semua</a>
         </div>
-        <div class="flex items-center gap-gutter-sm overflow-x-auto pb-gutter-xs">
-          <!-- COMPONENT: chip-filter-active -->
-          <button data-component-id="chip-filter-active" data-component-type="chip" data-component-variant="filter" aria-pressed="true" type="button" class="shrink-0 inline-flex items-center gap-gutter-xs min-h-10 px-gutter-md py-gutter-xs rounded-full bg-light-primary text-light-on-primary font-body text-label-md">
-            <span data-design-text-token="label-md">Semua</span>
-          </button>
-          <!-- COMPONENT: chip-action -->
-          <button data-component-id="chip-action" data-component-type="chip" data-component-variant="action" type="button" class="shrink-0 inline-flex items-center gap-gutter-xs min-h-10 px-gutter-md py-gutter-xs rounded-full bg-light-surface-container-lowest text-light-on-surface border border-light-outline-variant font-body text-label-md">
-            <span data-design-text-token="label-md">Akhlak Mulia</span>
-          </button>
-          <button data-component-id="chip-action" data-component-type="chip" data-component-variant="action" type="button" class="shrink-0 inline-flex items-center gap-gutter-xs min-h-10 px-gutter-md py-gutter-xs rounded-full bg-light-surface-container-lowest text-light-on-surface border border-light-outline-variant font-body text-label-md">
-            <span data-design-text-token="label-md">Doa Harian</span>
-          </button>
-          <button data-component-id="chip-action" data-component-type="chip" data-component-variant="action" type="button" class="shrink-0 inline-flex items-center gap-gutter-xs min-h-10 px-gutter-md py-gutter-xs rounded-full bg-light-surface-container-lowest text-light-on-surface border border-light-outline-variant font-body text-label-md">
-            <span data-design-text-token="label-md">Kisah Teladan</span>
-          </button>
+        <div id="home-category-list" class="flex items-center gap-gutter-sm overflow-x-auto pb-gutter-xs">
+          <a href="/komik-islami-anak/perpustakaan/index.html" class="shrink-0 inline-flex items-center min-h-10 px-gutter-md rounded-full bg-light-primary text-light-on-primary font-body text-label-md">Semua</a>
+          <span class="text-sm text-light-on-surface-variant">Memuat kategori...</span>
         </div>
       </section>
 
@@ -300,4 +288,24 @@ if (typeof module !== 'undefined') module.exports = globalThis.tailwind.config;
   </div>
 
 
+<script type="module">
+import { db } from "/komik-islami-anak/firebase-config.js";
+import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+const list = document.getElementById("home-category-list");
+try {
+  const snapshot = await getDocs(collection(db, "categories"));
+  const categories = snapshot.docs.map(d => d.data().name).filter(Boolean).sort((a,b)=>a.localeCompare(b,"id"));
+  list.innerHTML = '<a href="/komik-islami-anak/perpustakaan/index.html" class="shrink-0 inline-flex items-center min-h-10 px-gutter-md rounded-full bg-light-primary text-light-on-primary font-body text-label-md">Semua</a>';
+  for (const name of categories) {
+    const link = document.createElement("a");
+    link.href = "/komik-islami-anak/perpustakaan/index.html?kategori=" + encodeURIComponent(name);
+    link.className = "shrink-0 inline-flex items-center min-h-10 px-gutter-md rounded-full bg-light-surface-container-lowest text-light-on-surface border border-light-outline-variant font-body text-label-md";
+    link.textContent = name;
+    list.appendChild(link);
+  }
+  if (!categories.length) list.insertAdjacentHTML("beforeend", '<span class="text-sm">Belum ada kategori.</span>');
+} catch (error) {
+  list.innerHTML = '<span class="text-sm text-light-on-surface-variant">Kategori belum dapat dimuat.</span>';
+}
+</script>
 <script src="/komik-islami-anak/app.js"></script></body></html>
