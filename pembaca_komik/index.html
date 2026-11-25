@@ -191,10 +191,11 @@ if (typeof module !== 'undefined') module.exports = globalThis.tailwind.config;
   </div>
 
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script type="module">
 import { db } from "/komik-islami-anak/firebase-config.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-import * as pdfjsLib from "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs";
+const pdfjsLib = window.pdfjsLib;
 const id=new URLSearchParams(location.search).get("id");
 const area=document.getElementById("reader-content");
 const prev=document.getElementById("btn-prev");
@@ -202,7 +203,7 @@ const next=document.getElementById("btn-next");
 const counter=document.getElementById("page-counter");
 const progress=document.getElementById("read-progress");
 let pdf=null, page=1, total=1, touchX=0;
-pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs";
+pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvDWuXKGW-kvxsIfVmHA6b9vy2NIrNFj4sHbx94BphRF9OPcN1TcZz76fBJ1jo4Gky_g/exec";
 let jsonpCounter = 0;
 function loadPdfThroughAppsScript(fileId) {
@@ -367,23 +368,19 @@ async function loadReader(){
       const binary = atob(pdfBase64);
       const pdfBytes = new Uint8Array(binary.length);
       for (let i = 0; i < binary.length; i++) pdfBytes[i] = binary.charCodeAt(i);
-      pdf=await pdfjsLib.getDocument({data:pdfBytes}).promise;
+      pdf=await pdfjsLib.getDocument({data:pdfBytes, disableWorker:true, isEvalSupported:false}).promise;
       total=pdf.numPages;
       page=1;
       await renderPage();
     }catch(pdfError){
       console.error("PDF.js gagal memuat PDF:",pdfError);
       const note=document.createElement("p");
-      note.className="text-center text-sm p-3";
-      note.textContent="Mode geser belum dapat memuat PDF: " + (pdfError.message || "terjadi kesalahan") + ". Pratinjau Google Drive ditampilkan sebagai alternatif.";
-      const frame=document.createElement("iframe");
-      frame.src="https://drive.google.com/file/d/"+encodeURIComponent(d.fileId)+"/preview";
-      frame.title=d.title||"Komik PDF";
-      frame.className="w-full rounded-xl border border-light-outline-variant bg-white";
-      frame.style.height="75vh";
-      area.append(note,frame);
-      counter.textContent="Pratinjau PDF";
-      prev.disabled=true;next.disabled=true;
+      note.className="text-center text-sm p-4 rounded-xl bg-white";
+      note.textContent="PDF belum dapat dibuka di perangkat ini: " + (pdfError.message || "kesalahan pembacaan PDF") + ". Muat ulang halaman untuk mencoba lagi.";
+      area.replaceChildren(note);
+      counter.textContent="PDF gagal dimuat";
+      prev.disabled=true;
+      next.disabled=true;
     }
   } else if(d.fileUrl){
     const img=document.createElement("img");
