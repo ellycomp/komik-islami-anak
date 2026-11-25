@@ -266,8 +266,38 @@ async function goTo(n){
  page=Math.max(1,Math.min(total,n));
  await renderPage();
 }
-prev.addEventListener("click",()=>goTo(page-1));
-next.addEventListener("click",()=>goTo(page+1));
+// Tombol navigasi: delegasi klik pada dokumen agar tetap aktif di semua ukuran layar
+let buttonNavigationBusy = false;
+async function navigateByButton(direction) {
+  if (!pdf || buttonNavigationBusy) return;
+  const target = Math.max(1, Math.min(total, page + direction));
+  if (target === page) return;
+  buttonNavigationBusy = true;
+  prev.disabled = true;
+  next.disabled = true;
+  try {
+    await goTo(target);
+  } catch (err) {
+    console.error("Navigasi tombol gagal:", err);
+    counter.textContent = "Gagal membuka halaman. Coba lagi.";
+  } finally {
+    buttonNavigationBusy = false;
+    updateControls();
+  }
+}
+document.addEventListener("click", event => {
+  const button = event.target.closest("#btn-prev, #btn-next");
+  if (!button) return;
+  event.preventDefault();
+  event.stopPropagation();
+  navigateByButton(button.id === "btn-next" ? 1 : -1);
+}, true);
+[prev, next].forEach(button => {
+  button.disabled = false;
+  button.style.position = "relative";
+  button.style.zIndex = "30";
+  button.style.pointerEvents = "auto";
+});
 // Navigasi swipe HP: tangkap sentuhan di dokumen agar tidak hilang saat canvas dirender ulang
 let navigationBusy = false;
 let touchStart = null;
